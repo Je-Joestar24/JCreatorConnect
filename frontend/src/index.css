@@ -1,0 +1,119 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  /* Theme Colors - Light Mode (Violet Theme) */
+  --theme-primary: #7c3aed;
+  --theme-secondary: #8b5cf6;
+  --theme-accent: #a78bfa;
+  --theme-success: #10b981;
+  --theme-warning: #f59e0b;
+  --theme-error: #ef4444;
+
+  /* Background Colors */
+  --theme-bg: #ffffff;
+  --theme-bg-secondary: #f8fafc;
+  --theme-bg-tertiary: #f1f5f9;
+  --theme-bg-card: rgba(255, 255, 255, 0.8);
+  --theme-bg-overlay: rgba(255, 255, 255, 0.9);
+
+  /* Text Colors */
+  --theme-text: #0f172a;
+  --theme-text-secondary: #475569;
+  --theme-text-muted: #64748b;
+  --theme-text-inverse: #ffffff;
+
+  /* Border Colors */
+  --theme-border: #e2e8f0;
+  --theme-border-secondary: #cbd5e1;
+  --theme-border-accent: rgba(124, 58, 237, 0.2);
+
+  /* Shadows */
+  --theme-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --theme-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --theme-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --theme-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] {
+  /* Theme Colors - Dark Mode (Violet Theme) */
+  --theme-primary: #8b5cf6;
+  --theme-secondary: #a78bfa;
+  --theme-accent: #c4b5fd;
+  --theme-success: #10b981;
+  --theme-warning: #f59e0b;
+  --theme-error: #ef4444;
+
+  /* Background Colors */
+  --theme-bg: #0f172a;
+  --theme-bg-secondary: #1e293b;
+  --theme-bg-tertiary: #334155;
+  --theme-bg-card: rgba(30, 41, 59, 0.8);
+  --theme-bg-overlay: rgba(15, 23, 42, 0.9);
+
+  /* Text Colors */
+  --theme-text: #f1f5f9;
+  --theme-text-secondary: #cbd5e1;
+  --theme-text-muted: #94a3b8;
+  --theme-text-inverse: #0f172a;
+
+  /* Border Colors */
+  --theme-border: #334155;
+  --theme-border-secondary: #475569;
+  --theme-border-accent: rgba(139, 92, 246, 0.3);
+
+  /* Shadows */
+  --theme-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --theme-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --theme-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  --theme-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--theme-bg);
+  color: var(--theme-text);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+#root {
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--theme-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--theme-primary);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--theme-secondary);
+}
+
+/* Selection */
+::selection {
+  background-color: var(--theme-primary);
+  color: var(--theme-text-inverse);
+}
+
