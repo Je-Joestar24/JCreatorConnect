@@ -422,3 +422,266 @@
   }
 }
 
+/* How It Works Section Styles */
+.how-it-works-section {
+  position: relative;
+  background: var(--theme-bg);
+  min-height: 100vh;
+}
+
+.how-it-works-bg-decoration {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 30%, rgba(124, 58, 237, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.how-it-works-section > * {
+  position: relative;
+  z-index: 1;
+}
+
+.section-title {
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.how-it-works-step {
+  position: relative;
+}
+
+.step-card {
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.step-card:hover {
+  transform: translateY(-8px);
+}
+
+.step-card:hover .step-line {
+  width: 100%;
+}
+
+.step-card:hover .step-icon-container {
+  animation: iconPulse 1s ease-in-out infinite;
+}
+
+.step-icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes iconPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.step-number {
+  animation: numberPop 0.6s ease-out;
+  animation-fill-mode: both;
+}
+
+.step-card:nth-child(1) .step-number {
+  animation-delay: 0.1s;
+}
+
+.step-card:nth-child(2) .step-number {
+  animation-delay: 0.2s;
+}
+
+.step-card:nth-child(3) .step-number {
+  animation-delay: 0.3s;
+}
+
+.step-card:nth-child(4) .step-number {
+  animation-delay: 0.4s;
+}
+
+@keyframes numberPop {
+  0% {
+    transform: scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(10deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* Step Card Entrance Animation */
+.how-it-works-step {
+  animation: stepCardEntrance 0.6s ease-out both;
+}
+
+.how-it-works-step:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.how-it-works-step:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.how-it-works-step:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.how-it-works-step:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+@keyframes stepCardEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Creator/Supporter Section Headers */
+.creator-section,
+.supporter-section {
+  position: relative;
+}
+
+.creator-section::before,
+.supporter-section::before {
+  content: '';
+  position: absolute;
+  width: 100px;
+  height: 4px;
+  background: linear-gradient(90deg, var(--theme-primary), transparent);
+  top: -20px;
+  left: 0;
+  border-radius: 2px;
+  animation: lineExpand 1s ease-out;
+}
+
+@keyframes lineExpand {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100px;
+  }
+}
+
+/* Responsive Design for How It Works */
+@media (max-width: 960px) {
+  .how-it-works-section {
+    padding: 4rem 0;
+  }
+
+  .step-card {
+    margin-bottom: 1.5rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .how-it-works-section {
+    padding: 3rem 0;
+  }
+
+  .section-title {
+    font-size: 1.75rem !important;
+  }
+
+  .step-icon-container {
+    width: 60px;
+    height: 60px;
+  }
+
+  .step-icon-container svg {
+    font-size: 30px !important;
+  }
+
+  .step-number {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+}
+
+/* Dark Mode Adjustments */
+[data-theme="dark"] .step-card {
+  background: var(--theme-bg-card);
+  border-color: var(--theme-border);
+}
+
+[data-theme="dark"] .step-card:hover {
+  box-shadow: 0 12px 40px rgba(139, 92, 246, 0.3);
+  border-color: var(--theme-secondary);
+}
+
+[data-theme="dark"] .how-it-works-bg-decoration {
+  background: 
+    radial-gradient(circle at 20% 30%, rgba(124, 58, 237, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+}
+
+/* Micro Animations */
+.step-card::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.1), transparent);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+  pointer-events: none;
+}
+
+.step-card:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Icon Rotation on Hover */
+.step-icon-container svg {
+  transition: transform 0.3s ease;
+}
+
+.step-card:hover .step-icon-container svg {
+  transform: rotate(5deg) scale(1.1);
+}
+
+/* Gradient Text Animation */
+.section-title .gradient-text {
+  position: relative;
+  display: inline-block;
+}
+
+.section-title .gradient-text::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--theme-primary), var(--theme-secondary));
+  transition: width 0.5s ease;
+}
+
+.section-title:hover .gradient-text::after {
+  width: 100%;
+}
+
