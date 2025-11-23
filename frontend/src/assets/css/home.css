@@ -685,3 +685,333 @@
   width: 100%;
 }
 
+/* AI Highlights Section Styles */
+.ai-highlights-section {
+  position: relative;
+  background: var(--theme-bg);
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.ai-highlights-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 50% 50%, rgba(124, 58, 237, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 30% 20%, rgba(139, 92, 246, 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 70% 80%, rgba(167, 139, 250, 0.04) 0%, transparent 40%);
+  pointer-events: none;
+  z-index: 0;
+  animation: bgPulse 8s ease-in-out infinite;
+}
+
+@keyframes bgPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.ai-highlights-section > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Floating Container */
+.ai-floating-container {
+  position: relative;
+  width: 100%;
+}
+
+/* Central Logo */
+.ai-logo-container {
+  position: relative;
+  z-index: 2;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ai-logo-container .central-illustration {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.ai-logo-container .main-shape {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ai-logo-container .shape-container {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-secondary) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 20px 60px rgba(124, 58, 237, 0.3);
+  position: relative;
+}
+
+.ai-logo-container .shape-container::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--theme-secondary) 0%, var(--theme-accent) 100%);
+  opacity: 0.5;
+  animation: rotate 10s linear infinite;
+  z-index: -1;
+}
+
+.ai-logo-container .shape-icon {
+  font-size: 80px !important;
+  color: white;
+  animation: iconFloat 3s ease-in-out infinite;
+}
+
+@keyframes iconFloat {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(5deg);
+  }
+}
+
+/* AI Feature Cards */
+.ai-feature-card {
+  z-index: 3;
+}
+
+.ai-card {
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ai-card:hover {
+  box-shadow: 0 20px 50px rgba(124, 58, 237, 0.25) !important;
+}
+
+/* Card Glow Effect */
+.ai-card-glow {
+  animation: cardGlow 2s ease-in-out infinite;
+}
+
+@keyframes cardGlow {
+  0%, 100% {
+    opacity: 0.5;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+}
+
+/* Floating Animation for Cards */
+.ai-feature-card {
+  animation: cardFloat 6s ease-in-out infinite;
+}
+
+.ai-feature-card:nth-child(1) {
+  animation-delay: 0s;
+  animation-duration: 5s;
+}
+
+.ai-feature-card:nth-child(2) {
+  animation-delay: 1s;
+  animation-duration: 6s;
+}
+
+.ai-feature-card:nth-child(3) {
+  animation-delay: 2s;
+  animation-duration: 5.5s;
+}
+
+.ai-feature-card:nth-child(4) {
+  animation-delay: 0.5s;
+  animation-duration: 6.5s;
+}
+
+.ai-feature-card:nth-child(5) {
+  animation-delay: 1.5s;
+  animation-duration: 5.8s;
+}
+
+@keyframes cardFloat {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+  }
+  25% {
+    transform: translateY(-10px) translateX(5px);
+  }
+  50% {
+    transform: translateY(-5px) translateX(-3px);
+  }
+  75% {
+    transform: translateY(-15px) translateX(3px);
+  }
+}
+
+/* Decorative Elements */
+.ai-highlights-section::before,
+.ai-highlights-section::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ai-highlights-section::before {
+  width: 300px;
+  height: 300px;
+  background: var(--theme-primary);
+  top: 10%;
+  left: 5%;
+  animation: decorFloat1 8s ease-in-out infinite;
+}
+
+.ai-highlights-section::after {
+  width: 250px;
+  height: 250px;
+  background: var(--theme-secondary);
+  bottom: 10%;
+  right: 5%;
+  animation: decorFloat2 10s ease-in-out infinite;
+}
+
+@keyframes decorFloat1 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(30px, -30px) scale(1.1);
+  }
+}
+
+@keyframes decorFloat2 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-30px, 30px) scale(1.1);
+  }
+}
+
+/* Responsive Design for AI Highlights */
+@media (max-width: 1200px) {
+  .ai-feature-card {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    margin: 1.5rem auto;
+    max-width: 100% !important;
+  }
+
+  .ai-logo-container {
+    position: relative;
+    margin: 2rem auto;
+  }
+
+  .ai-floating-container > div {
+    min-height: auto;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 768px) {
+  .ai-highlights-section {
+    padding: 4rem 0;
+  }
+
+  .ai-card {
+    max-width: 100% !important;
+  }
+
+  .ai-logo-container svg {
+    width: 60px;
+    height: 60px;
+  }
+
+  .ai-highlights-section::before,
+  .ai-highlights-section::after {
+    display: none;
+  }
+}
+
+/* Dark Mode Adjustments */
+[data-theme="dark"] .ai-card {
+  background: var(--theme-bg-card);
+  border-color: var(--theme-border);
+}
+
+[data-theme="dark"] .ai-card:hover {
+  box-shadow: 0 20px 50px rgba(139, 92, 246, 0.3) !important;
+}
+
+[data-theme="dark"] .ai-highlights-bg {
+  background: 
+    radial-gradient(circle at 50% 50%, rgba(124, 58, 237, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 30% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 40%),
+    radial-gradient(circle at 70% 80%, rgba(167, 139, 250, 0.08) 0%, transparent 40%);
+}
+
+[data-theme="dark"] .ai-logo-container > div {
+  box-shadow: 0 20px 60px rgba(139, 92, 246, 0.4);
+}
+
+/* Micro Interactions */
+.ai-card {
+  transform-style: preserve-3d;
+}
+
+.ai-card:hover {
+  transform: translateZ(20px);
+}
+
+/* Smooth Card Transitions */
+.ai-feature-card {
+  will-change: transform;
+}
+
+/* Icon Animation on Hover */
+.ai-card:hover svg {
+  animation: iconSpin 0.6s ease-in-out;
+}
+
+@keyframes iconSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.2);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+

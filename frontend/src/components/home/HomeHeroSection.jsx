@@ -47,7 +47,7 @@ const HomeHeroSection = () => {
 
   return (
     <Box className="hero-section">
-      <Container maxWidth="xl" sx={{ position: 'relative', height: '100vh', overflow: 'hidden' }}>
+      <Container maxWidth="xl" sx={{ position: 'relative', height: '100vh' }}>
         <Box className="hero-container">
           {/* Left Content Area */}
           <motion.div
