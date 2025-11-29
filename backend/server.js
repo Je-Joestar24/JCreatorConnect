@@ -7,6 +7,20 @@ import connectDB from './config/database.js';
 // Load environment variables
 dotenv.config();
 
+// Validate required environment variables
+const requiredEnvVars = ['JWT_SECRET', 'MONGODB_URI'];
+const missingEnvVars = requiredEnvVars.filter((varName) => !process.env[varName]);
+
+if (missingEnvVars.length > 0) {
+  console.error('❌ Missing required environment variables:');
+  missingEnvVars.forEach((varName) => {
+    console.error(`   - ${varName}`);
+  });
+  console.error('\n💡 Please create a .env file in the backend directory and set these variables.');
+  console.error('   You can copy env.example to .env as a starting point.\n');
+  process.exit(1);
+}
+
 // Connect to MongoDB
 connectDB();
 
@@ -39,13 +53,13 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// API Routes (will be added later)
-// import authRoutes from './routes/auth.js';
+// API Routes
+import authRoutes from './routes/auth.routes.js';
 // import creatorRoutes from './routes/creators.js';
 // import postRoutes from './routes/posts.js';
 // import paymentRoutes from './routes/payments.js';
 // import aiRoutes from './routes/ai.js';
-// app.use('/api/auth', authRoutes);
+app.use('/api/auth', authRoutes);
 // app.use('/api/creators', creatorRoutes);
 // app.use('/api/posts', postRoutes);
 // app.use('/api/payments', paymentRoutes);
