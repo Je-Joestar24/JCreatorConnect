@@ -1495,3 +1495,115 @@
   opacity: 0.25;
 }
 
+/* About Technology Section Styles */
+.about-technology-section {
+  position: relative;
+  background: var(--theme-bg);
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.about-technology-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 25% 25%, rgba(124, 58, 237, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(139, 92, 246, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(167, 139, 250, 0.03) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+  animation: techBgPulse 15s ease-in-out infinite;
+}
+
+@keyframes techBgPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.about-technology-section > *:not(.about-technology-bg):not(.about-tech-circle) {
+  position: relative;
+  z-index: 1;
+}
+
+/* Decorative Circles */
+.about-tech-circle {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.about-tech-circle.circle-1 {
+  width: 450px;
+  height: 450px;
+  background: var(--theme-primary);
+  top: 5%;
+  right: 5%;
+}
+
+.about-tech-circle.circle-2 {
+  width: 380px;
+  height: 380px;
+  background: var(--theme-secondary);
+  bottom: 10%;
+  left: 8%;
+}
+
+/* Technology Logo Container */
+.tech-logo-container {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.tech-logo-container.active {
+  border-color: var(--theme-primary) !important;
+  box-shadow: 0 8px 32px rgba(124, 58, 237, 0.2) !important;
+}
+
+.tech-logo-container.hovered {
+  transform: translateY(-8px) scale(1.02);
+}
+
+.tech-logo-container.active .tech-logo-container img {
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+/* Responsive Design for About Technology */
+@media (max-width: 960px) {
+  .about-technology-section {
+    min-height: auto;
+    padding: 4rem 0;
+  }
+
+  .about-tech-circle {
+    display: none;
+  }
+
+  .tech-logo-container {
+    padding: 1.5rem !important;
+  }
+}
+
+/* Dark Mode Adjustments */
+[data-theme="dark"] .about-technology-bg {
+  background: 
+    radial-gradient(circle at 25% 25%, rgba(124, 58, 237, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(167, 139, 250, 0.08) 0%, transparent 60%);
+}
+
+[data-theme="dark"] .about-tech-circle {
+  opacity: 0.2;
+}
+
