@@ -1270,3 +1270,111 @@
   background-size: 200% 100%;
 }
 
+/* About Intro Section Styles */
+.about-intro-section {
+  position: relative;
+  background: var(--theme-bg);
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.about-intro-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 30%, rgba(124, 58, 237, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(167, 139, 250, 0.03) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+  animation: aboutBgPulse 10s ease-in-out infinite;
+}
+
+@keyframes aboutBgPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.about-intro-section > *:not(.about-intro-bg):not(.about-decorative-icon):not(.about-intro-circle) {
+  position: relative;
+  z-index: 1;
+}
+
+/* Decorative Icons */
+.about-decorative-icon {
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Decorative Circles */
+.about-intro-circle {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.about-intro-circle.circle-1 {
+  width: 300px;
+  height: 300px;
+  background: var(--theme-primary);
+  top: 5%;
+  right: 5%;
+}
+
+.about-intro-circle.circle-2 {
+  width: 250px;
+  height: 250px;
+  background: var(--theme-secondary);
+  bottom: 10%;
+  left: 8%;
+}
+
+/* Logo Glow Animation */
+@keyframes logoGlow {
+  0% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+/* Responsive Design for About Intro */
+@media (max-width: 960px) {
+  .about-intro-section {
+    min-height: auto;
+    padding: 4rem 0;
+  }
+
+  .about-decorative-icon {
+    display: none;
+  }
+
+  .about-intro-circle {
+    display: none;
+  }
+}
+
+/* Dark Mode Adjustments */
+[data-theme="dark"] .about-intro-bg {
+  background: 
+    radial-gradient(circle at 20% 30%, rgba(124, 58, 237, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(167, 139, 250, 0.08) 0%, transparent 60%);
+}
+
+[data-theme="dark"] .about-intro-circle {
+  opacity: 0.3;
+}
+
