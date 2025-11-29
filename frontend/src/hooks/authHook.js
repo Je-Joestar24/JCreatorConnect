@@ -21,9 +21,15 @@ export const useAuth = () => {
    * @returns {Promise<void>}
    */
   const handleLogin = async (credentials) => {
-    await dispatch(login(credentials)).unwrap();
-    // Navigate to home or dashboard after successful login
-    navigate('/');
+    const result = await dispatch(login(credentials)).unwrap();
+    // Navigate based on user role after successful login
+    if (result.user?.role === 'creator') {
+      navigate('/creator/posts');
+    } else if (result.user?.role === 'supporter') {
+      navigate('/supporter/home');
+    } else {
+      navigate('/');
+    }
   };
   
   /**
@@ -36,9 +42,15 @@ export const useAuth = () => {
    * @returns {Promise<void>}
    */
   const handleRegister = async (userData) => {
-    await dispatch(register(userData)).unwrap();
-    // Navigate to home or dashboard after successful registration
-    navigate('/');
+    const result = await dispatch(register(userData)).unwrap();
+    // Navigate based on user role after successful registration
+    if (result.user?.role === 'creator') {
+      navigate('/creator/posts');
+    } else if (result.user?.role === 'supporter') {
+      navigate('/supporter/home');
+    } else {
+      navigate('/');
+    }
   };
   
   /**

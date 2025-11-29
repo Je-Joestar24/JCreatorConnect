@@ -1,11 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { registerUser, loginUser, logoutUser, getCurrentUser } from '../../services/user/authService.js';
 
-// Initialize state from localStorage
+// Initialize state from sessionStorage
 const getInitialState = () => {
   try {
-    const storedUser = localStorage.getItem('user');
-    const storedToken = localStorage.getItem('token');
+    const storedUser = sessionStorage.getItem('user');
+    const storedToken = sessionStorage.getItem('token');
     
     return {
       user: storedUser ? JSON.parse(storedUser) : null,
@@ -37,12 +37,12 @@ export const register = createAsyncThunk(
     const result = await registerUser({ name, email, password, role });
     
     if (result.success) {
-      // Store token and user in localStorage
+      // Store token and user in sessionStorage
       if (result.data.token) {
-        localStorage.setItem('token', result.data.token);
+        sessionStorage.setItem('token', result.data.token);
       }
       if (result.data.user) {
-        localStorage.setItem('user', JSON.stringify(result.data.user));
+        sessionStorage.setItem('user', JSON.stringify(result.data.user));
       }
       
       return {
@@ -66,12 +66,12 @@ export const login = createAsyncThunk(
     const result = await loginUser({ email, password });
     
     if (result.success) {
-      // Store token and user in localStorage
+      // Store token and user in sessionStorage
       if (result.data.token) {
-        localStorage.setItem('token', result.data.token);
+        sessionStorage.setItem('token', result.data.token);
       }
       if (result.data.user) {
-        localStorage.setItem('user', JSON.stringify(result.data.user));
+        sessionStorage.setItem('user', JSON.stringify(result.data.user));
       }
       
       return {
@@ -94,9 +94,9 @@ export const logout = createAsyncThunk(
   async () => {
     const result = await logoutUser();
     
-    // Clear localStorage regardless of API response
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    // Clear sessionStorage regardless of API response
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
     
     if (result.success) {
       return {
@@ -118,15 +118,15 @@ export const fetchCurrentUser = createAsyncThunk(
     const result = await getCurrentUser();
     
     if (result.success) {
-      // Update localStorage with fresh user data
+      // Update sessionStorage with fresh user data
       if (result.data) {
-        localStorage.setItem('user', JSON.stringify(result.data));
+        sessionStorage.setItem('user', JSON.stringify(result.data));
       }
       return result.data;
     } else {
       // If token is invalid, clear everything
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('user');
       return rejectWithValue(result.error);
     }
   }
@@ -148,12 +148,12 @@ const userSlice = createSlice({
       state.userLogged = !!action.payload.token;
       state.error = null;
       
-      // Update localStorage
+      // Update sessionStorage
       if (action.payload.token) {
-        localStorage.setItem('token', action.payload.token);
+        sessionStorage.setItem('token', action.payload.token);
       }
       if (action.payload.user) {
-        localStorage.setItem('user', JSON.stringify(action.payload.user));
+        sessionStorage.setItem('user', JSON.stringify(action.payload.user));
       }
     },
     clearAuth: (state) => {
@@ -164,9 +164,9 @@ const userSlice = createSlice({
       state.signupErrors = null;
       state.signupMessage = null;
       
-      // Clear localStorage
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      // Clear sessionStorage
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('user');
     },
     clearErrors: (state) => {
       state.error = null;
