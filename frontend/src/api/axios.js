@@ -31,9 +31,11 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      // Handle unauthorized - clear token and redirect to login
+      // Handle unauthorized - clear token and user data
       localStorage.removeItem('token');
-      // window.location.href = '/login';
+      localStorage.removeItem('user');
+      // Note: Redux state will be cleared when user tries to use auth actions
+      // For immediate clearing, you can dispatch clearAuth() here if needed
     }
     return Promise.reject(error);
   }

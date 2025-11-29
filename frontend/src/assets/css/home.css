@@ -1714,3 +1714,34 @@
   opacity: 0.22;
 }
 
+/* Login Page Styles */
+.login-left-panel {
+  position: relative;
+  overflow: hidden;
+}
+
+.login-right-panel {
+  position: relative;
+}
+
+/* Neural Network Animation */
+@keyframes neuralPulse {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Responsive Design for Login */
+@media (max-width: 960px) {
+  .login-left-panel {
+    display: none !important;
+  }
+  
+  .login-right-panel {
+    width: 100% !important;
+  }
+}
+

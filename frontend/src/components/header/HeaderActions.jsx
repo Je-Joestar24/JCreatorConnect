@@ -18,7 +18,7 @@ const HeaderActions = () => {
       <motion.div whileHover={{ y: -1 }} transition={{ duration: 0.2 }}>
         <Button
           variant="text"
-          onClick={() => {}}
+          onClick={() => navigate('/login')}
           sx={{
             fontSize: '0.9rem',
             color: 'var(--theme-text-secondary)',
@@ -36,7 +36,7 @@ const HeaderActions = () => {
       >
         <Button
           variant="contained"
-          onClick={() => {}}
+          onClick={() => navigate('/signup')}
           sx={{
             fontSize: '0.9rem',
             fontWeight: 600,

@@ -1,12 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
-// Import reducers here when created
-// import authReducer from './slices/authSlice';
 import themeReducer from './slices/themeSlice.js';
+import userReducer from './slices/userSlice.js';
 
 export const store = configureStore({
   reducer: {
-    // auth: authReducer,
     theme: themeReducer,
+    user: userReducer,
     // Add more reducers here
   },
   middleware: (getDefaultMiddleware) =>
