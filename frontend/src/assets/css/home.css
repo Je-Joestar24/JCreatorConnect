@@ -1378,3 +1378,120 @@
   opacity: 0.3;
 }
 
+/* About Mission Section Styles */
+.about-mission-section {
+  position: relative;
+  background: var(--theme-bg);
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.about-mission-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 30% 20%, rgba(124, 58, 237, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 70% 80%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(167, 139, 250, 0.04) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+  animation: missionBgPulse 12s ease-in-out infinite;
+}
+
+@keyframes missionBgPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.about-mission-section > *:not(.about-mission-bg):not(.about-mission-floating-icon):not(.about-mission-circle) {
+  position: relative;
+  z-index: 1;
+}
+
+/* Floating Icons */
+.about-mission-floating-icon {
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Decorative Circles */
+.about-mission-circle {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.about-mission-circle.circle-1 {
+  width: 400px;
+  height: 400px;
+  background: var(--theme-primary);
+  top: 10%;
+  left: 5%;
+}
+
+.about-mission-circle.circle-2 {
+  width: 350px;
+  height: 350px;
+  background: var(--theme-secondary);
+  bottom: 15%;
+  right: 8%;
+}
+
+.about-mission-circle.circle-3 {
+  width: 300px;
+  height: 300px;
+  background: var(--theme-accent);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Mission Badge Glow Animation */
+@keyframes missionBadgeGlow {
+  0% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 0.7;
+  }
+}
+
+/* Responsive Design for About Mission */
+@media (max-width: 960px) {
+  .about-mission-section {
+    min-height: auto;
+    padding: 4rem 0;
+  }
+
+  .about-mission-floating-icon {
+    display: none;
+  }
+
+  .about-mission-circle {
+    display: none;
+  }
+}
+
+/* Dark Mode Adjustments */
+[data-theme="dark"] .about-mission-bg {
+  background: 
+    radial-gradient(circle at 30% 20%, rgba(124, 58, 237, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 70% 80%, rgba(139, 92, 246, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(167, 139, 250, 0.08) 0%, transparent 60%);
+}
+
+[data-theme="dark"] .about-mission-circle {
+  opacity: 0.25;
+}
+
