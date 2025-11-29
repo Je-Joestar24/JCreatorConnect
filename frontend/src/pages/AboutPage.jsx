@@ -2,6 +2,7 @@ import { Box } from '@mui/material';
 import AboutIntro from '../components/about/AboutIntro';
 import AboutMission from '../components/about/AboutMission';
 import AboutTechnology from '../components/about/AboutTechnology';
+import AboutVission from '../components/about/AboutVission';
 
 const AboutPage = () => {
   return (
@@ -9,6 +10,7 @@ const AboutPage = () => {
       <AboutIntro />
       <AboutMission />
       <AboutTechnology />
+      <AboutVission />
     </Box>
   );
 };

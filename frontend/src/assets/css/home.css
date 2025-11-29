@@ -1607,3 +1607,110 @@
   opacity: 0.2;
 }
 
+/* About Vision Section Styles */
+.about-vision-section {
+  position: relative;
+  background: var(--theme-bg);
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.about-vision-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 35% 15%, rgba(124, 58, 237, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 65% 85%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(167, 139, 250, 0.04) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+  animation: visionBgPulse 18s ease-in-out infinite;
+}
+
+@keyframes visionBgPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.65;
+  }
+}
+
+.about-vision-section > *:not(.about-vision-bg):not(.about-vision-floating-icon):not(.about-vision-circle) {
+  position: relative;
+  z-index: 1;
+}
+
+/* Floating Icons */
+.about-vision-floating-icon {
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Decorative Circles */
+.about-vision-circle {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.about-vision-circle.circle-1 {
+  width: 500px;
+  height: 500px;
+  background: var(--theme-primary);
+  top: 8%;
+  right: 6%;
+}
+
+.about-vision-circle.circle-2 {
+  width: 420px;
+  height: 420px;
+  background: var(--theme-secondary);
+  bottom: 12%;
+  left: 7%;
+}
+
+.about-vision-circle.circle-3 {
+  width: 360px;
+  height: 360px;
+  background: var(--theme-accent);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Responsive Design for About Vision */
+@media (max-width: 960px) {
+  .about-vision-section {
+    min-height: auto;
+    padding: 4rem 0;
+  }
+
+  .about-vision-floating-icon {
+    display: none;
+  }
+
+  .about-vision-circle {
+    display: none;
+  }
+}
+
+/* Dark Mode Adjustments */
+[data-theme="dark"] .about-vision-bg {
+  background: 
+    radial-gradient(circle at 35% 15%, rgba(124, 58, 237, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 65% 85%, rgba(139, 92, 246, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(167, 139, 250, 0.08) 0%, transparent 60%);
+}
+
+[data-theme="dark"] .about-vision-circle {
+  opacity: 0.22;
+}
+
