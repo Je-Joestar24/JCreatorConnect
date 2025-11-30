@@ -14,7 +14,6 @@ import {
   Payment,
   Group,
 } from '@mui/icons-material';
-import '../../assets/css/home.css';
 
 const HomeHowItWorks = () => {
   // Creator steps

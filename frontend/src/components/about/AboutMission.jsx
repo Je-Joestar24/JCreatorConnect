@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
 import { Box, Typography, Container } from '@mui/material';
 import { Flag, RocketLaunch, Lightbulb, TrendingUp } from '@mui/icons-material';
-import '../../assets/css/home.css';
 
 const AboutMission = () => {
   // Floating decorative elements

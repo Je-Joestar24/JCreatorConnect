@@ -2,7 +2,6 @@ import { motion } from 'framer-motion';
 import { Box, Typography } from '@mui/material';
 import { AutoAwesome, Favorite, Star, TrendingUp, Psychology } from '@mui/icons-material';
 import favLogo from '../../assets/images/fav.png';
-import '../../assets/css/home.css';
 
 const LoginLeftPanel = () => {
   // Flowing decorative elements (neuro link style)

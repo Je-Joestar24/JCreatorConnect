@@ -2,7 +2,6 @@ import { motion } from 'framer-motion';
 import { Box, Typography, Container, Button, Chip } from '@mui/material';
 import { AutoAwesome, TrendingUp, Favorite } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import '../../assets/css/home.css';
 
 const HomeCallToActionSection = () => {
     const navigate = useNavigate();

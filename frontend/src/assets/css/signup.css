@@ -1,0 +1,35 @@
+/* ============================================
+   SIGNUP PAGE STYLES
+   ============================================ */
+
+/* Signup Panel Styles */
+.signup-left-panel {
+  position: relative;
+  overflow: hidden;
+}
+
+.signup-right-panel {
+  position: relative;
+}
+
+/* Neural Network Animation */
+@keyframes neuralPulse {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Responsive Design - Signup */
+@media (max-width: 960px) {
+  .signup-left-panel {
+    display: none !important;
+  }
+  
+  .signup-right-panel {
+    width: 100% !important;
+  }
+}
+

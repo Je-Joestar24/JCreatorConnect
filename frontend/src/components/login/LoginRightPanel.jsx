@@ -13,7 +13,6 @@ import {
 import { Visibility, VisibilityOff, Home, AutoAwesome } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/authHook';
-import '../../assets/css/home.css';
 
 const LoginRightPanel = () => {
   const navigate = useNavigate();

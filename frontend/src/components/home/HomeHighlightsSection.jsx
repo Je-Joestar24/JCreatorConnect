@@ -9,7 +9,6 @@ import {
   LocalOffer,
   Recommend,
 } from '@mui/icons-material';
-import '../../assets/css/home.css';
 
 const HomeHighlightsSection = () => {
   const [hoveredCard, setHoveredCard] = useState(null);

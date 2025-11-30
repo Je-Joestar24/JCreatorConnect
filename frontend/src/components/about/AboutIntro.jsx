@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
 import { Box, Typography, Container, Paper } from '@mui/material';
 import { AutoAwesome, Favorite, TrendingUp, Star } from '@mui/icons-material';
-import '../../assets/css/home.css';
 
 const AboutIntro = () => {
   // Decorative floating elements

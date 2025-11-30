@@ -9,7 +9,6 @@ import {
   TrendingUp,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import '../../assets/css/home.css';
 
 const HomeHeroSection = () => {
   const navigate = useNavigate();

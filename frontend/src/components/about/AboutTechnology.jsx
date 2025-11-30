@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Box, Typography, Container } from '@mui/material';
 import { Code, Security, CloudUpload } from '@mui/icons-material';
-import '../../assets/css/home.css';
 
 // Import technology logos
 import mongodbLogo from '../../assets/images/about/mongodb.png';

@@ -9,7 +9,6 @@ import {
   Store,
   Groups,
 } from '@mui/icons-material';
-import '../../assets/css/home.css';
 
 const AboutVission = () => {
   // Floating decorative elements
