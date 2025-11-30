@@ -237,7 +237,7 @@ const HomeCallToActionSection = () => {
                             <Button
                                 variant="contained"
                                 size="large"
-                                onClick={() => navigate('/register?role=creator')}
+                                onClick={() => navigate('/signup?role=creator')}
                                 className="cta-button-primary"
                                 sx={{
                                     px: { xs: 4, md: 5 },
@@ -269,7 +269,7 @@ const HomeCallToActionSection = () => {
                             <Button
                                 variant="outlined"
                                 size="large"
-                                onClick={() => navigate('/creators')}
+                                onClick={() => navigate('/signup?role=supporter')}
                                 className="cta-button-secondary"
                                 sx={{
                                     px: { xs: 4, md: 5 },

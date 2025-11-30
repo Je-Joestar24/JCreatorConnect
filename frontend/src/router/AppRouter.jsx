@@ -5,6 +5,7 @@ import SupporterLayout from '../layouts/SupporterLayout';
 import HomePage from '../pages/HomePage';
 import AboutPage from '../pages/AboutPage';
 import LoginPage from '../pages/LoginPage';
+import SignupPage from '../pages/SignupPage';
 import CreatorPosts from '../pages/creator/CreatorPosts';
 import SupporterHome from '../pages/supporter/SupporterHome';
 import RequiresCreator from './access/RequiresCreator';
@@ -26,6 +27,14 @@ const AppRouter = () => {
         element={
           <RequiresGuest>
             <LoginPage />
+          </RequiresGuest>
+        }
+      />
+      <Route
+        path="/signup"
+        element={
+          <RequiresGuest>
+            <SignupPage />
           </RequiresGuest>
         }
       />

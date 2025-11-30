@@ -111,7 +111,7 @@ const HomeHeroSection = () => {
                   variant="contained"
                   size="large"
                   className="cta-button-primary"
-                  onClick={() => navigate('/register?role=creator')}
+                  onClick={() => navigate('/signup?role=creator')}
                   sx={{
                     px: 4,
                     py: 1.5,
@@ -137,7 +137,7 @@ const HomeHeroSection = () => {
                   variant="outlined"
                   size="large"
                   className="cta-button-secondary"
-                  onClick={() => navigate('/creators')}
+                  onClick={() => navigate('/signup?role=supporter')}
                   sx={{
                     px: 4,
                     py: 1.5,
