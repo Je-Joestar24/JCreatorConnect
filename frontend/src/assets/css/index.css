@@ -19,3 +19,6 @@
 
 /* Signup Page Styles */
 @import './signup.css';
+
+/* Creator Profile Styles */
+@import './creator.css';

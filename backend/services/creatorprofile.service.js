@@ -120,6 +120,31 @@ export const getPublicCreatorProfile = async (username) => {
     .limit(5)
     .lean();
 
+  // Check profile completion status
+  const missingFields = [];
+  if (!creatorProfile.bio || creatorProfile.bio.trim() === '') {
+    missingFields.push('bio');
+  }
+  if (!user.avatarUrl || user.avatarUrl.trim() === '') {
+    missingFields.push('avatarUrl');
+  }
+  if (!creatorProfile.bannerUrl || creatorProfile.bannerUrl.trim() === '') {
+    missingFields.push('bannerUrl');
+  }
+  const hasSocials = creatorProfile.socials && (
+    creatorProfile.socials.instagram ||
+    creatorProfile.socials.youtube ||
+    creatorProfile.socials.twitter ||
+    creatorProfile.socials.website
+  );
+  if (!hasSocials) {
+    missingFields.push('socials');
+  }
+
+  const totalFields = 4; // bio, avatarUrl, bannerUrl, socials
+  const completedFields = totalFields - missingFields.length;
+  const completionPercentage = Math.round((completedFields / totalFields) * 100);
+
   // Build public profile response
   return {
     // User information
@@ -160,6 +185,14 @@ export const getPublicCreatorProfile = async (username) => {
     membershipTiers: creatorProfile.membershipTiers || [],
     // Featured post
     featuredPost: creatorProfile.featuredPostId || null,
+    // Profile completion status
+    completionStatus: {
+      isComplete: missingFields.length === 0,
+      completionPercentage,
+      missingFields,
+      totalFields,
+      completedFields,
+    },
   };
 };
 
@@ -216,6 +249,37 @@ export const getCreatorProfileByUserId = async (
     .limit(20)
     .lean();
 
+  // Separate posts by access type for consistent structure
+  const freePosts = allPosts.filter((post) => post.accessType === 'free');
+  const lockedPosts = allPosts.filter(
+    (post) => post.accessType === 'supporter-only' || post.accessType === 'membership-only'
+  );
+
+  // Check profile completion status
+  const missingFields = [];
+  if (!creatorProfile.bio || creatorProfile.bio.trim() === '') {
+    missingFields.push('bio');
+  }
+  if (!user.avatarUrl || user.avatarUrl.trim() === '') {
+    missingFields.push('avatarUrl');
+  }
+  if (!creatorProfile.bannerUrl || creatorProfile.bannerUrl.trim() === '') {
+    missingFields.push('bannerUrl');
+  }
+  const hasSocials = creatorProfile.socials && (
+    creatorProfile.socials.instagram ||
+    creatorProfile.socials.youtube ||
+    creatorProfile.socials.twitter ||
+    creatorProfile.socials.website
+  );
+  if (!hasSocials) {
+    missingFields.push('socials');
+  }
+
+  const totalFields = 4; // bio, avatarUrl, bannerUrl, socials
+  const completedFields = totalFields - missingFields.length;
+  const completionPercentage = Math.round((completedFields / totalFields) * 100);
+
   // Build profile response
   const profileData = {
     // User information
@@ -236,12 +300,32 @@ export const getCreatorProfileByUserId = async (
       // recommendedAmounts: creatorProfile.recommendedAmounts || [],
       // thankYouMessage: creatorProfile.thankYouMessage || '',
     },
-    // Posts
-    posts: allPosts,
+    // Posts (structured same as public profile for consistency)
+    posts: {
+      free: freePosts,
+      locked: lockedPosts.map((post) => ({
+        _id: post._id,
+        title: post.title,
+        content: post.content,
+        type: post.type,
+        mediaUrl: post.mediaUrl,
+        createdAt: post.createdAt,
+        accessType: post.accessType,
+        isLocked: true,
+      })),
+    },
     // Membership tiers
     membershipTiers: creatorProfile.membershipTiers || [],
     // Featured post
     featuredPost: creatorProfile.featuredPostId || null,
+    // Profile completion status
+    completionStatus: {
+      isComplete: missingFields.length === 0,
+      completionPercentage,
+      missingFields,
+      totalFields,
+      completedFields,
+    },
   };
 
   // Add private data if requested
@@ -300,11 +384,8 @@ export const updateCreatorProfile = async (userId, updateData) => {
   Object.assign(creatorProfile, updateFields);
   await creatorProfile.save();
 
-  // Return updated profile with populated fields
-  return await CreatorProfile.findById(creatorProfile._id)
-    .populate('membershipTiers')
-    .populate('featuredPostId')
-    .lean();
+  // Return updated profile with completion status (include private data for own profile)
+  return await getCreatorProfileByUserId(userId, true);
 };
 
 /**
@@ -422,7 +503,7 @@ export const updateCreatorBio = async (userId, bio) => {
   creatorProfile.bio = bio ? bio.trim() : '';
   await creatorProfile.save();
 
-  // Return updated profile
+  // Return updated profile with completion status
   return await getCreatorProfileByUserId(userId, true);
 };
 
@@ -471,7 +552,7 @@ export const updateCreatorSocialLinks = async (userId, socials) => {
 
   await creatorProfile.save();
 
-  // Return updated profile
+  // Return updated profile with completion status
   return await getCreatorProfileByUserId(userId, true);
 };
 

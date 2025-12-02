@@ -55,11 +55,13 @@ app.get('/api/health', (req, res) => {
 
 // API Routes
 import authRoutes from './routes/auth.routes.js';
+import creatorProfileRoutes from './routes/creatorprofile.routes.js';
 // import creatorRoutes from './routes/creators.js';
 // import postRoutes from './routes/posts.js';
 // import paymentRoutes from './routes/payments.js';
 // import aiRoutes from './routes/ai.js';
 app.use('/api/auth', authRoutes);
+app.use('/api/creator-profile', creatorProfileRoutes);
 // app.use('/api/creators', creatorRoutes);
 // app.use('/api/posts', postRoutes);
 // app.use('/api/payments', paymentRoutes);
