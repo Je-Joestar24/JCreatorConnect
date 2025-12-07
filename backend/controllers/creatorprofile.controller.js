@@ -11,8 +11,8 @@ import {
 } from '../services/creatorprofile.service.js';
 
 /**
- * @route   GET /api/creator-profile/:username
- * @desc    Get public creator profile by username
+ * @route   GET /api/creator-profile/:id
+ * @desc    Get public creator profile by user ID
  * @access  Public
  * 
  * Returns public creator profile information visible to everyone:
@@ -27,16 +27,16 @@ import {
  * - Membership tiers (if any)
  * 
  * @param   {object} req - Express request object
- * @param   {string} req.params.username - Creator's username
+ * @param   {string} req.params.id - Creator's user ID (MongoDB ObjectId)
  * @param   {object} res - Express response object
  * @param   {function} next - Express next middleware
  */
 export const getPublicProfile = async (req, res, next) => {
   try {
-    const { username } = req.params;
+    const { id } = req.params;
 
     // Get public profile data
-    const profile = await getPublicCreatorProfile(username);
+    const profile = await getPublicCreatorProfile(id);
 
     res.status(200).json({
       success: true,

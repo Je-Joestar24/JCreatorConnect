@@ -8,20 +8,104 @@ import { Readable } from 'stream';
 // Configure Cloudinary
 // Note: Ensure CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET
 // are set in your .env file
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  });
+}
+
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
- * Upload image buffer to Cloudinary
+ * Upload image to local storage (fallback when Cloudinary is not available)
+ * @param {Buffer} buffer - Image file buffer
+ * @param {string} userId - User ID
+ * @param {string} type - 'profile' or 'banner'
+ * @returns {Promise<string>} - Local file URL
+ */
+const uploadToLocal = async (buffer, userId, type = 'profile') => {
+  const uploadsDir = path.join(__dirname, '../uploads');
+  const targetDir = type === 'profile' 
+    ? path.join(uploadsDir, 'profiles')
+    : path.join(uploadsDir, 'banners');
+  
+  // Ensure directory exists
+  if (!fs.existsSync(targetDir)) {
+    fs.mkdirSync(targetDir, { recursive: true });
+  }
+
+  // Generate filename
+  const timestamp = Date.now();
+  const filename = `${userId}_${timestamp}.jpg`; // Save as jpg for consistency
+  const filepath = path.join(targetDir, filename);
+
+  // Write file
+  fs.writeFileSync(filepath, buffer);
+
+  // Return URL path (will be served by Express static middleware)
+  const urlPath = `/uploads/${type === 'profile' ? 'profiles' : 'banners'}/${filename}`;
+  return urlPath;
+};
+
+/**
+ * Upload image buffer to Cloudinary with local storage fallback
+ * @param {Buffer} buffer - Image file buffer
+ * @param {string} folder - Cloudinary folder path
+ * @param {string} publicId - Public ID for the image (optional)
+ * @param {string} userId - User ID (for local fallback)
+ * @param {string} type - 'profile' or 'banner' (for local fallback)
+ * @returns {Promise<string>} - Image URL (Cloudinary or local)
+ */
+const uploadImage = async (buffer, folder, publicId = null, userId = null, type = 'profile') => {
+  // Check if Cloudinary is configured
+  const isCloudinaryConfigured = 
+    process.env.CLOUDINARY_CLOUD_NAME && 
+    process.env.CLOUDINARY_API_KEY && 
+    process.env.CLOUDINARY_API_SECRET;
+
+  // Try Cloudinary first if configured
+  if (isCloudinaryConfigured) {
+    try {
+      return await uploadToCloudinary(buffer, folder, publicId);
+    } catch (error) {
+      console.warn('Cloudinary upload failed, falling back to local storage:', error.message);
+      // Fall through to local storage
+    }
+  }
+
+  // Fallback to local storage
+  if (!userId) {
+    throw new Error('User ID is required for local storage fallback');
+  }
+
+  console.log('Using local storage for image upload (Cloudinary not available or failed)');
+  const localPath = await uploadToLocal(buffer, userId, type);
+  // Construct full URL for local files
+  // Remove /api from base URL if present, since uploads are served at root level
+  const baseUrl = (process.env.BACKEND_URL || process.env.FRONTEND_URL || 'http://localhost:5000').replace('/api', '');
+  return `${baseUrl}${localPath}`;
+};
+
+/**
+ * Upload image buffer to Cloudinary (original function, kept for reference)
  * @param {Buffer} buffer - Image file buffer
  * @param {string} folder - Cloudinary folder path
  * @param {string} publicId - Public ID for the image (optional)
  * @returns {Promise<string>} - Cloudinary secure URL
  */
 const uploadToCloudinary = async (buffer, folder, publicId = null) => {
+  // Check if Cloudinary is configured
+  if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+    throw new Error('Cloudinary is not configured');
+  }
+
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
@@ -35,7 +119,8 @@ const uploadToCloudinary = async (buffer, folder, publicId = null) => {
       },
       (error, result) => {
         if (error) {
-          reject(error);
+          console.error('Cloudinary upload error:', error);
+          reject(new Error(`Cloudinary upload failed: ${error.message || 'Unknown error'}`));
         } else {
           resolve(result.secure_url);
         }
@@ -51,7 +136,7 @@ const uploadToCloudinary = async (buffer, folder, publicId = null) => {
 };
 
 /**
- * Get public creator profile by username
+ * Get public creator profile by user ID
  * 
  * Returns public information visible to everyone:
  * - Profile photo (from User.avatarUrl)
@@ -64,25 +149,31 @@ const uploadToCloudinary = async (buffer, folder, publicId = null) => {
  * - Public posts feed (free posts + locked posts preview)
  * - Membership tiers (if any)
  * 
- * @param {string} username - Creator's username (email or username field)
+ * @param {string} userId - Creator's user ID (MongoDB ObjectId)
  * @returns {Promise<object>} - Public creator profile object
  * @throws {Error} - If creator not found
  */
-export const getPublicCreatorProfile = async (username) => {
-  // Find user by username (assuming username is email or a username field)
-  // Note: If User model has a separate username field, use that instead
-  const user = await User.findOne({
-    $or: [
-      { email: username.toLowerCase() },
-      // Add username field check if it exists in User model
-      // { username: username.toLowerCase() }
-    ],
-    role: 'creator',
-  }).select('name email avatarUrl role createdAt');
+export const getPublicCreatorProfile = async (userId) => {
+  // Validate MongoDB ObjectId format
+  if (!userId || !userId.match(/^[0-9a-fA-F]{24}$/)) {
+    const error = new Error('Invalid user ID format');
+    error.statusCode = 400;
+    throw error;
+  }
 
+  // Find user by ID
+  const user = await User.findById(userId).select('name email avatarUrl role createdAt');
+  
   if (!user) {
     const error = new Error('Creator profile not found');
     error.statusCode = 404;
+    throw error;
+  }
+
+  // Verify user is a creator
+  if (user.role !== 'creator') {
+    const error = new Error('User is not a creator');
+    error.statusCode = 403;
     throw error;
   }
 
@@ -408,11 +499,13 @@ export const uploadProfileImage = async (userId, file) => {
   }
 
   try {
-    // Upload to Cloudinary
-    const avatarUrl = await uploadToCloudinary(
+    // Upload image (tries Cloudinary first, falls back to local storage)
+    const avatarUrl = await uploadImage(
       file.buffer,
       'jcreatorconnect/profiles',
-      `profile_${userId}`
+      `profile_${userId}`,
+      userId.toString(),
+      'profile'
     );
 
     // Update user avatar
@@ -422,9 +515,12 @@ export const uploadProfileImage = async (userId, file) => {
     // Get updated profile
     return await getCreatorProfileByUserId(userId, true);
   } catch (error) {
-    const uploadError = new Error('Failed to upload profile picture');
-    uploadError.statusCode = 500;
+    // Preserve original error message for better debugging
+    const errorMessage = error.message || 'Failed to upload profile picture';
+    const uploadError = new Error(errorMessage);
+    uploadError.statusCode = error.statusCode || 500;
     uploadError.originalError = error;
+    console.error('Profile picture upload error:', error);
     throw uploadError;
   }
 };
@@ -455,11 +551,13 @@ export const uploadBannerImage = async (userId, file) => {
   }
 
   try {
-    // Upload to Cloudinary
-    const bannerUrl = await uploadToCloudinary(
+    // Upload image (tries Cloudinary first, falls back to local storage)
+    const bannerUrl = await uploadImage(
       file.buffer,
       'jcreatorconnect/banners',
-      `banner_${userId}`
+      `banner_${userId}`,
+      userId.toString(),
+      'banner'
     );
 
     // Update banner URL
@@ -469,9 +567,12 @@ export const uploadBannerImage = async (userId, file) => {
     // Get updated profile
     return await getCreatorProfileByUserId(userId, true);
   } catch (error) {
-    const uploadError = new Error('Failed to upload banner');
-    uploadError.statusCode = 500;
+    // Preserve original error message for better debugging
+    const errorMessage = error.message || 'Failed to upload banner';
+    const uploadError = new Error(errorMessage);
+    uploadError.statusCode = error.statusCode || 500;
     uploadError.originalError = error;
+    console.error('Banner upload error:', error);
     throw uploadError;
   }
 };

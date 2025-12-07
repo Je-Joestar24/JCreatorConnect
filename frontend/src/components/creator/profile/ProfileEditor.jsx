@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Card,
@@ -18,14 +20,23 @@ import {
   YouTube,
   Twitter,
   Language,
+  Visibility,
 } from '@mui/icons-material';
 import useCreatorProfile from '../../../hooks/creatorProfileHook';
+import { displayNotification } from '../../../store/slices/uiSlice';
+import { 
+  updateFormData, 
+  setProfilePicPreview, 
+  setBannerPreview 
+} from '../../../store/slices/creatorProfileSlice';
 
 /**
  * Profile Editor Component
  * Allows creators to create/edit their profile
  */
 const ProfileEditor = ({ onSave, initialProfile = null }) => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const {
     updateBio,
     updateSocialLinks,
@@ -33,49 +44,71 @@ const ProfileEditor = ({ onSave, initialProfile = null }) => {
     uploadBanner,
     loading,
     error,
+    profile,
   } = useCreatorProfile();
 
-  const [formData, setFormData] = useState({
-    bio: initialProfile?.profile?.bio || '',
-    instagram: initialProfile?.profile?.socials?.instagram || '',
-    youtube: initialProfile?.profile?.socials?.youtube || '',
-    twitter: initialProfile?.profile?.socials?.twitter || '',
-    website: initialProfile?.profile?.socials?.website || '',
-  });
+  // Get form data from Redux store
+  const storeFormData = useSelector((state) => state.creatorProfile.formData);
+  const storeProfilePicPreview = useSelector((state) => state.creatorProfile.profilePicPreview);
+  const storeBannerPreview = useSelector((state) => state.creatorProfile.bannerPreview);
 
-  // Update form data when initialProfile changes
+  // Use store data if available, otherwise use initialProfile
+  const currentProfile = profile || initialProfile;
+  const [formData, setFormData] = useState(
+    storeFormData.bio || storeFormData.instagram ? storeFormData : {
+      bio: currentProfile?.profile?.bio || '',
+      instagram: currentProfile?.profile?.socials?.instagram || '',
+      youtube: currentProfile?.profile?.socials?.youtube || '',
+      twitter: currentProfile?.profile?.socials?.twitter || '',
+      website: currentProfile?.profile?.socials?.website || '',
+    }
+  );
+
+  const [profilePicPreview, setProfilePicPreviewLocal] = useState(
+    storeProfilePicPreview || currentProfile?.user?.avatarUrl || null
+  );
+  const [bannerPreview, setBannerPreviewLocal] = useState(
+    storeBannerPreview || currentProfile?.profile?.bannerUrl || null
+  );
+
+  // Update form data when profile changes
   useEffect(() => {
-    if (initialProfile) {
-      setFormData({
-        bio: initialProfile?.profile?.bio || '',
-        instagram: initialProfile?.profile?.socials?.instagram || '',
-        youtube: initialProfile?.profile?.socials?.youtube || '',
-        twitter: initialProfile?.profile?.socials?.twitter || '',
-        website: initialProfile?.profile?.socials?.website || '',
-      });
-      if (initialProfile?.user?.avatarUrl) {
-        setProfilePicPreview(initialProfile.user.avatarUrl);
+    if (currentProfile) {
+      const newFormData = {
+        bio: currentProfile?.profile?.bio || '',
+        instagram: currentProfile?.profile?.socials?.instagram || '',
+        youtube: currentProfile?.profile?.socials?.youtube || '',
+        twitter: currentProfile?.profile?.socials?.twitter || '',
+        website: currentProfile?.profile?.socials?.website || '',
+      };
+      setFormData(newFormData);
+      dispatch(updateFormData(newFormData));
+      
+      if (currentProfile?.user?.avatarUrl) {
+        setProfilePicPreviewLocal(currentProfile.user.avatarUrl);
+        dispatch(setProfilePicPreview(currentProfile.user.avatarUrl));
       }
-      if (initialProfile?.profile?.bannerUrl) {
-        setBannerPreview(initialProfile.profile.bannerUrl);
+      if (currentProfile?.profile?.bannerUrl) {
+        setBannerPreviewLocal(currentProfile.profile.bannerUrl);
+        dispatch(setBannerPreview(currentProfile.profile.bannerUrl));
       }
     }
-  }, [initialProfile]);
+  }, [currentProfile, dispatch]);
 
   const [profilePicFile, setProfilePicFile] = useState(null);
   const [bannerFile, setBannerFile] = useState(null);
-  const [profilePicPreview, setProfilePicPreview] = useState(null);
-  const [bannerPreview, setBannerPreview] = useState(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
+    const newFormData = {
+      ...formData,
       [name]: value,
-    }));
+    };
+    setFormData(newFormData);
+    dispatch(updateFormData(newFormData)); // Sync with Redux store
     setSaveError(null);
   };
 
@@ -85,7 +118,8 @@ const ProfileEditor = ({ onSave, initialProfile = null }) => {
       setProfilePicFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setProfilePicPreview(reader.result);
+        setProfilePicPreviewLocal(reader.result);
+        dispatch(setProfilePicPreview(reader.result)); // Sync with Redux store
       };
       reader.readAsDataURL(file);
     }
@@ -97,7 +131,8 @@ const ProfileEditor = ({ onSave, initialProfile = null }) => {
       setBannerFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setBannerPreview(reader.result);
+        setBannerPreviewLocal(reader.result);
+        dispatch(setBannerPreview(reader.result)); // Sync with Redux store
       };
       reader.readAsDataURL(file);
     }
@@ -109,41 +144,84 @@ const ProfileEditor = ({ onSave, initialProfile = null }) => {
     setSaveError(null);
     setSaveSuccess(false);
 
+    const errors = [];
+    
     try {
-      // Update bio if provided
-      if (formData.bio.trim()) {
-        await updateBio(formData.bio);
+      // Update bio if provided (even if empty, allow clearing)
+      try {
+        await updateBio(formData.bio || '');
+      } catch (err) {
+        errors.push(`Bio: ${err?.error || err?.message || 'Failed to update'}`);
       }
 
-      // Update social links if any provided
-      const socials = {};
-      if (formData.instagram.trim()) socials.instagram = formData.instagram;
-      if (formData.youtube.trim()) socials.youtube = formData.youtube;
-      if (formData.twitter.trim()) socials.twitter = formData.twitter;
-      if (formData.website.trim()) socials.website = formData.website;
-
-      if (Object.keys(socials).length > 0) {
+      // Update social links (allow empty values to clear)
+      const socials = {
+        instagram: formData.instagram.trim() || '',
+        youtube: formData.youtube.trim() || '',
+        twitter: formData.twitter.trim() || '',
+        website: formData.website.trim() || '',
+      };
+      
+      try {
         await updateSocialLinks(socials);
+      } catch (err) {
+        errors.push(`Social links: ${err?.error || err?.message || 'Failed to update'}`);
       }
 
-      // Upload profile picture if selected
+      // Upload profile picture if selected (don't fail if this fails)
       if (profilePicFile) {
-        await uploadProfilePicture(profilePicFile);
+        try {
+          await uploadProfilePicture(profilePicFile);
+        } catch (err) {
+          errors.push(`Profile picture: ${err?.error || err?.message || 'Failed to upload'}`);
+          // Don't throw - continue with other updates
+        }
       }
 
-      // Upload banner if selected
+      // Upload banner if selected (don't fail if this fails)
       if (bannerFile) {
-        await uploadBanner(bannerFile);
+        try {
+          await uploadBanner(bannerFile);
+        } catch (err) {
+          errors.push(`Banner: ${err?.error || err?.message || 'Failed to upload'}`);
+          // Don't throw - continue with other updates
+        }
       }
 
-      setSaveSuccess(true);
-      setTimeout(() => {
-        if (onSave) onSave();
-      }, 1500);
+      // If there were errors but some operations succeeded, show partial success
+      if (errors.length > 0) {
+        const errorMessage = `Some updates failed: ${errors.join(', ')}`;
+        setSaveError(errorMessage);
+        dispatch(displayNotification({
+          message: errorMessage,
+          type: 'warning',
+        }));
+      } else {
+        setSaveSuccess(true);
+        dispatch(displayNotification({
+          message: 'Profile saved successfully!',
+          type: 'success',
+        }));
+        setTimeout(() => {
+          if (onSave) onSave();
+        }, 1500);
+      }
     } catch (err) {
-      setSaveError(err.message || 'Failed to save profile');
+      const errorMessage = err?.error || err?.message || 'Failed to save profile';
+      setSaveError(errorMessage);
+      dispatch(displayNotification({
+        message: errorMessage,
+        type: 'error',
+      }));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleViewPublic = () => {
+    const userId = currentProfile?.user?._id;
+    if (userId) {
+      navigate(`/creator/${userId}`);
     }
   };
 
@@ -161,16 +239,38 @@ const ProfileEditor = ({ onSave, initialProfile = null }) => {
         }}
       >
         <CardContent sx={{ p: 4 }}>
-          <Typography
-            variant="h5"
-            sx={{
-              fontWeight: 700,
-              color: 'var(--theme-text)',
-              mb: 3,
-            }}
-          >
-            Set Up Your Creator Profile
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+            <Typography
+              variant="h5"
+              sx={{
+                fontWeight: 700,
+                color: 'var(--theme-text)',
+              }}
+            >
+              {currentProfile && (currentProfile.profile?.bio || currentProfile.user?.avatarUrl || currentProfile.profile?.bannerUrl || 
+                (currentProfile.profile?.socials && (currentProfile.profile.socials.instagram || currentProfile.profile.socials.youtube || 
+                currentProfile.profile.socials.twitter || currentProfile.profile.socials.website)))
+                ? 'Edit Your Creator Profile'
+                : 'Set Up Your Creator Profile'}
+            </Typography>
+            {currentProfile && (
+              <Button
+                variant="outlined"
+                startIcon={<Visibility />}
+                onClick={handleViewPublic}
+                sx={{
+                  borderColor: 'var(--theme-primary)',
+                  color: 'var(--theme-primary)',
+                  '&:hover': {
+                    borderColor: 'var(--theme-secondary)',
+                    backgroundColor: 'var(--theme-bg-secondary)',
+                  },
+                }}
+              >
+                View Public Profile
+              </Button>
+            )}
+          </Box>
 
           <Typography
             variant="body2"
@@ -212,11 +312,12 @@ const ProfileEditor = ({ onSave, initialProfile = null }) => {
                     justifyContent: 'center',
                     overflow: 'hidden',
                     border: '3px solid var(--theme-primary)',
+                    position: 'relative',
                   }}
                 >
-                  {profilePicPreview ? (
+                  {profilePicPreview || currentProfile?.user?.avatarUrl ? (
                     <img
-                      src={profilePicPreview}
+                      src={profilePicPreview || currentProfile?.user?.avatarUrl}
                       alt="Profile preview"
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
@@ -272,9 +373,9 @@ const ProfileEditor = ({ onSave, initialProfile = null }) => {
                   position: 'relative',
                 }}
               >
-                {bannerPreview ? (
+                {bannerPreview || currentProfile?.profile?.bannerUrl ? (
                   <img
-                    src={bannerPreview}
+                    src={bannerPreview || currentProfile?.profile?.bannerUrl}
                     alt="Banner preview"
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />

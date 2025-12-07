@@ -95,13 +95,13 @@ const setThankYouMessageValidation = [
 // ============================================
 
 /**
- * @route   GET /api/creator-profile/:username
- * @desc    Get public creator profile by username
+ * @route   GET /api/creator-profile/:id
+ * @desc    Get public creator profile by user ID
  * @access  Public
- * @param   {string} username - Creator's username (from User model)
+ * @param   {string} id - Creator's user ID (MongoDB ObjectId)
  * @returns {object} Creator profile with public information
  */
-router.get('/:username', getPublicProfile);
+router.get('/:id', getPublicProfile);
 
 // ============================================
 // PROTECTED ROUTES (Creator Only)
@@ -113,7 +113,7 @@ router.get('/:username', getPublicProfile);
  * @access  Private (Creator only)
  * @returns {object} Full creator profile including private settings
  */
-router.get('/me', protect, authorize('creator'), getMyProfile);
+router.get('/own/me', protect, authorize('creator'), getMyProfile);
 
 /**
  * @route   PUT /api/creator-profile/me
@@ -123,7 +123,7 @@ router.get('/me', protect, authorize('creator'), getMyProfile);
  * @returns {object} Updated creator profile
  */
 router.put(
-  '/me',
+  '/own/me',
   protect,
   authorize('creator'),
   updateBioValidation,

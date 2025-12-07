@@ -60,21 +60,30 @@ const CreatorProfileBody = ({
               </IconButton>
             )}
           </Box>
-          <Typography
-            variant="body1"
-            className="profile-bio"
-            sx={{
-              color: 'var(--theme-text-secondary)',
-              lineHeight: 1.8,
-              whiteSpace: 'pre-wrap',
-              fontStyle: !profileData?.bio ? 'italic' : 'normal',
-              opacity: !profileData?.bio ? 0.7 : 1,
-            }}
-          >
-            {profileData?.bio || (isOwnProfile 
-              ? 'Add a bio to tell your supporters about yourself! Click the edit button above to get started.' 
-              : 'No bio yet.')}
-          </Typography>
+          {profileData?.bio ? (
+            <Typography
+              variant="body1"
+              className="profile-bio"
+              sx={{
+                color: 'var(--theme-text-secondary)',
+                lineHeight: 1.8,
+                whiteSpace: 'pre-wrap',
+              }}
+            >
+              {profileData.bio}
+            </Typography>
+          ) : isOwnProfile ? (
+            <Typography
+              variant="body2"
+              sx={{
+                color: 'var(--theme-text-muted)',
+                fontStyle: 'italic',
+                opacity: 0.7,
+              }}
+            >
+              Add a bio to tell your supporters about yourself! Click the edit button above to get started.
+            </Typography>
+          ) : null}
         </Box>
 
         {/* Categories Section */}

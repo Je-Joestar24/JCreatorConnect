@@ -1,12 +1,47 @@
 import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(__dirname, '../uploads');
+const profilesDir = path.join(uploadsDir, 'profiles');
+const bannersDir = path.join(uploadsDir, 'banners');
+
+[uploadsDir, profilesDir, bannersDir].forEach((dir) => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+});
+
+// Disk storage for local file fallback
+const diskStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    // Determine destination based on route or file field
+    if (file.fieldname === 'image') {
+      // Check if it's profile picture or banner based on route
+      const isProfilePic = req.path?.includes('profile-picture');
+      cb(null, isProfilePic ? profilesDir : bannersDir);
+    } else {
+      cb(null, uploadsDir);
+    }
+  },
+  filename: (req, file, cb) => {
+    // Generate unique filename: userId_timestamp.extension
+    const userId = req.user?._id || 'unknown';
+    const timestamp = Date.now();
+    const ext = path.extname(file.originalname);
+    const filename = `${userId}_${timestamp}${ext}`;
+    cb(null, filename);
+  },
+});
+
 // Configure multer for file uploads
-const storage = multer.memoryStorage(); // Store files in memory (for Cloudinary)
+// Use memory storage for Cloudinary, but we'll also save to disk as fallback
+const memoryStorage = multer.memoryStorage();
 
 // File filter
 const fileFilter = (req, file, cb) => {
@@ -24,24 +59,40 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Configure multer
-const upload = multer({
-  storage: storage,
+// Configure multer with both memory and disk storage
+// Memory storage for Cloudinary, disk storage for fallback
+const uploadMemory = multer({
+  storage: memoryStorage,
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
   },
   fileFilter: fileFilter,
 });
 
-// Middleware for single image upload
-const uploadSingle = upload.single('image');
+const uploadDisk = multer({
+  storage: diskStorage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: fileFilter,
+});
+
+// Middleware for single image upload (memory for Cloudinary)
+const uploadSingle = uploadMemory.single('image');
+
+// Middleware for single image upload (disk for local storage)
+const uploadSingleDisk = uploadDisk.single('image');
 
 // Middleware for multiple image uploads
-const uploadMultiple = upload.array('images', 5);
+const uploadMultiple = uploadMemory.array('images', 5);
 
 export {
   uploadSingle,
+  uploadSingleDisk,
   uploadMultiple,
-  upload,
+  uploadMemory as upload,
+  uploadsDir,
+  profilesDir,
+  bannersDir,
 };
 

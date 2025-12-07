@@ -20,7 +20,7 @@ const AppRouter = () => {
       <Route element={<UnauthedLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
-        <Route path="/creator/:username" element={<CreatorProfile />} />
+        <Route path="/creator/:id" element={<CreatorProfile />} />
       </Route>
 
       {/* Guest Only Routes */}

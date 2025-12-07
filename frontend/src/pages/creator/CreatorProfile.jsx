@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, CircularProgress, Alert, Container } from '@mui/material';
+import { Box, CircularProgress, Container, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
+import { useDispatch } from 'react-redux';
 import useCreatorProfile from '../../hooks/creatorProfileHook';
 import { useAuth } from '../../hooks/authHook';
+import { displayNotification } from '../../store/slices/uiSlice';
 import CreatorProfileBanner from '../../components/creator/profile/CreatorProfileBanner';
 import CreatorProfileHeader from '../../components/creator/profile/CreatorProfileHeader';
 import CreatorProfileBody from '../../components/creator/profile/CreatorProfileBody';
@@ -15,8 +17,9 @@ import ProfileEditor from '../../components/creator/profile/ProfileEditor';
  * Displays public creator profile or own profile if viewing own page
  */
 const CreatorProfile = () => {
-  const { username } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { user: currentUser } = useAuth();
   const {
     profile,
@@ -32,13 +35,40 @@ const CreatorProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [profileNotFound, setProfileNotFound] = useState(false);
 
+  /**
+   * Check if profile is completely empty (no data at all)
+   */
+  const isProfileEmpty = (profileData) => {
+    if (!profileData) return true;
+    
+    const profile = profileData.profile || {};
+    const user = profileData.user || {};
+    const socials = profile.socials || {};
+    
+    const hasBio = profile.bio && profile.bio.trim().length > 0;
+    const hasAvatar = user.avatarUrl && user.avatarUrl.trim().length > 0;
+    const hasBanner = profile.bannerUrl && profile.bannerUrl.trim().length > 0;
+    const hasSocials = socials.instagram || socials.youtube || socials.twitter || socials.website;
+    
+    // Profile is empty if none of these fields have data
+    return !hasBio && !hasAvatar && !hasBanner && !hasSocials;
+  };
+
+  // Check if error is "profile not found" - calculated before hooks
+  const isProfileNotFoundError = error && typeof error === 'string' && (
+    error.toLowerCase().includes('not found') || 
+    error.toLowerCase().includes('profile not found')
+  );
+
+  // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
+  // Fetch profile on mount or when id/currentUser changes
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         clearError();
         setProfileNotFound(false);
-        // If no username param, fetch own profile
-        if (!username) {
+        // If no id param, fetch own profile
+        if (!id) {
           try {
             await getMyProfile();
           } catch (err) {
@@ -50,7 +80,7 @@ const CreatorProfile = () => {
           }
         } else {
           // Check if viewing own profile
-          const isOwn = currentUser?.email === username || currentUser?.username === username;
+          const isOwn = currentUser?._id === id;
           if (isOwn && currentUser?.role === 'creator') {
             try {
               await getMyProfile();
@@ -60,7 +90,7 @@ const CreatorProfile = () => {
               setIsEditing(true);
             }
           } else {
-            await getPublicProfile(username);
+            await getPublicProfile(id);
           }
         }
       } catch (error) {
@@ -74,7 +104,7 @@ const CreatorProfile = () => {
         
         // If profile not found and user is a creator viewing their own profile, show editor
         if (isProfileNotFound && currentUser?.role === 'creator') {
-          const isOwn = !username || currentUser?.email === username || currentUser?.username === username;
+          const isOwn = !id || currentUser?._id === id;
           if (isOwn) {
             setProfileNotFound(true);
             setIsEditing(true);
@@ -87,13 +117,44 @@ const CreatorProfile = () => {
     if (currentUser) {
       fetchProfile();
     }
-  }, [username, currentUser]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, currentUser?._id, currentUser?.role]);
+
+  // Display error notification if there's an error (notification component handles it)
+  useEffect(() => {
+    if (error && !isProfileNotFoundError) {
+      const errorMessage = typeof error === 'string' ? error : error?.message || 'An error occurred';
+      dispatch(displayNotification({
+        message: errorMessage,
+        type: 'error',
+      }));
+      clearError(); // Clear error after showing notification
+    }
+  }, [error, isProfileNotFoundError, dispatch, clearError]);
+
+  // Display notification for profile not found (public view)
+  useEffect(() => {
+    if (!profile && !(currentUser?.role === 'creator' && (!id || currentUser?._id === id)) && !loading && !error) {
+      dispatch(displayNotification({
+        message: 'Profile not found',
+        type: 'info',
+      }));
+    }
+  }, [profile, currentUser, id, loading, error, dispatch]);
 
   const handleBannerUpload = async (file) => {
     try {
       await uploadBanner(file);
+      dispatch(displayNotification({
+        message: 'Banner uploaded successfully!',
+        type: 'success',
+      }));
     } catch (error) {
       console.error('Failed to upload banner:', error);
+      dispatch(displayNotification({
+        message: error?.error || error?.message || 'Failed to upload banner',
+        type: 'error',
+      }));
     }
   };
 
@@ -113,7 +174,8 @@ const CreatorProfile = () => {
     );
   }
 
-  // If profile not found but user is creator, show editor
+  // If profile not found but user is creator, check if it's completely empty
+  // Only show editor if profile is completely empty (no data at all)
   if ((!profile || profileNotFound) && currentUser?.role === 'creator' && (isEditing || profileNotFound)) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -135,26 +197,31 @@ const CreatorProfile = () => {
     );
   }
 
-  // Show error only if not a creator trying to view their own profile
-  // Check if error is "profile not found" - if so and user is creator, show editor instead
-  const isProfileNotFoundError = error && (
-    error.toLowerCase().includes('not found') || 
-    error.toLowerCase().includes('profile not found')
-  );
-  
-  if (error && !isProfileNotFoundError && !(currentUser?.role === 'creator' && (currentUser?.email === username || currentUser?.username === username))) {
+  // If profile exists but is completely empty, show editor
+  if (profile && isOwnProfile && isProfileEmpty(profile) && !isEditing) {
     return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <ProfileEditor
+            initialProfile={profile}
+            onSave={async () => {
+              setIsEditing(false);
+              clearError();
+              await getMyProfile();
+            }}
+          />
+        </motion.div>
       </Container>
     );
   }
-  
+
   // If error is "profile not found" and user is creator, show editor
   if (isProfileNotFoundError && currentUser?.role === 'creator' && !profile) {
-    const isOwn = !username || currentUser?.email === username || currentUser?.username === username;
+    const isOwn = !id || currentUser?._id === id;
     if (isOwn) {
       return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -176,7 +243,7 @@ const CreatorProfile = () => {
   }
 
   // If no profile and not editing, show editor for creators
-  if (!profile && currentUser?.role === 'creator' && !username) {
+  if (!profile && currentUser?.role === 'creator' && !id) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <ProfileEditor
@@ -190,10 +257,14 @@ const CreatorProfile = () => {
   }
 
   // If profile not found for public view (not creator's own profile)
-  if (!profile && !(currentUser?.role === 'creator' && (!username || currentUser?.email === username || currentUser?.username === username))) {
+  if (!profile && !(currentUser?.role === 'creator' && (!id || currentUser?._id === id)) && !loading) {
     return (
       <Container maxWidth="md" sx={{ py: 4 }}>
-        <Alert severity="info">Profile not found</Alert>
+        <Box sx={{ textAlign: 'center', py: 8 }}>
+          <Typography variant="h6" sx={{ color: 'var(--theme-text-secondary)' }}>
+            Profile not found
+          </Typography>
+        </Box>
       </Container>
     );
   }

@@ -43,3 +43,7 @@ coverage/
 # MongoDB
 data/
 
+# Uploaded files (local storage fallback)
+uploads/
+!uploads/.gitkeep
+

@@ -1,13 +1,13 @@
 import api from '../../api/axios.js';
 
 /**
- * Get public creator profile by username
- * @param {string} username - Creator's username (email)
+ * Get public creator profile by user ID
+ * @param {string} userId - Creator's user ID (MongoDB ObjectId)
  * @returns {Promise<object>} - Response with creator profile data
  */
-export const getPublicCreatorProfile = async (username) => {
+export const getPublicCreatorProfile = async (userId) => {
   try {
-    const response = await api.get(`/creator-profile/${username}`);
+    const response = await api.get(`/creator-profile/${userId}`);
     return {
       success: true,
       data: response.data.data,
@@ -26,7 +26,7 @@ export const getPublicCreatorProfile = async (username) => {
  */
 export const getMyCreatorProfile = async () => {
   try {
-    const response = await api.get('/creator-profile/me');
+    const response = await api.get('/creator-profile/own/me');
     return {
       success: true,
       data: response.data.data,
@@ -48,7 +48,7 @@ export const getMyCreatorProfile = async () => {
  */
 export const updateCreatorProfile = async (updateData) => {
   try {
-    const response = await api.put('/creator-profile/me', updateData);
+    const response = await api.put('/creator-profile/own/me', updateData);
     return {
       success: true,
       data: response.data.data,

@@ -22,13 +22,13 @@ export const useCreatorProfile = () => {
   const profileState = useSelector((state) => state.creatorProfile);
 
   /**
-   * Fetch public creator profile by username
-   * @param {string} username - Creator's username
+   * Fetch public creator profile by user ID
+   * @param {string} userId - Creator's user ID (MongoDB ObjectId)
    * @returns {Promise<void>}
    */
-  const getPublicProfile = async (username) => {
+  const getPublicProfile = async (userId) => {
     try {
-      await dispatch(fetchPublicProfile(username)).unwrap();
+      await dispatch(fetchPublicProfile(userId)).unwrap();
     } catch (error) {
       console.error('Failed to fetch public profile:', error);
       // Re-throw with error details

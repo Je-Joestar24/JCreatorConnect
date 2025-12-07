@@ -14,8 +14,8 @@ import {
 // Async thunk for fetching public creator profile
 export const fetchPublicProfile = createAsyncThunk(
   'creatorProfile/fetchPublicProfile',
-  async (username, { rejectWithValue }) => {
-    const result = await getPublicCreatorProfile(username);
+  async (userId, { rejectWithValue }) => {
+    const result = await getPublicCreatorProfile(userId);
     if (result.success) {
       return result.data;
     } else {
@@ -148,6 +148,16 @@ const initialState = {
   loading: false,
   error: null,
   isOwnProfile: false,
+  // Form state to preserve data during edits
+  formData: {
+    bio: '',
+    instagram: '',
+    youtube: '',
+    twitter: '',
+    website: '',
+  },
+  profilePicPreview: null,
+  bannerPreview: null,
 };
 
 const creatorProfileSlice = createSlice({
@@ -161,6 +171,26 @@ const creatorProfileSlice = createSlice({
     },
     clearError: (state) => {
       state.error = null;
+    },
+    updateFormData: (state, action) => {
+      state.formData = { ...state.formData, ...action.payload };
+    },
+    setProfilePicPreview: (state, action) => {
+      state.profilePicPreview = action.payload;
+    },
+    setBannerPreview: (state, action) => {
+      state.bannerPreview = action.payload;
+    },
+    clearFormData: (state) => {
+      state.formData = {
+        bio: '',
+        instagram: '',
+        youtube: '',
+        twitter: '',
+        website: '',
+      };
+      state.profilePicPreview = null;
+      state.bannerPreview = null;
     },
   },
   extraReducers: (builder) => {
@@ -190,6 +220,18 @@ const creatorProfileSlice = createSlice({
         state.loading = false;
         state.profile = action.payload;
         state.isOwnProfile = true;
+        // Sync form data with profile
+        if (action.payload) {
+          state.formData = {
+            bio: action.payload.profile?.bio || '',
+            instagram: action.payload.profile?.socials?.instagram || '',
+            youtube: action.payload.profile?.socials?.youtube || '',
+            twitter: action.payload.profile?.socials?.twitter || '',
+            website: action.payload.profile?.socials?.website || '',
+          };
+          state.profilePicPreview = action.payload.user?.avatarUrl || null;
+          state.bannerPreview = action.payload.profile?.bannerUrl || null;
+        }
       })
       .addCase(fetchMyProfile.rejected, (state, action) => {
         state.loading = false;
@@ -289,6 +331,13 @@ const creatorProfileSlice = createSlice({
   },
 });
 
-export const { clearProfile, clearError } = creatorProfileSlice.actions;
+export const { 
+  clearProfile, 
+  clearError, 
+  updateFormData, 
+  setProfilePicPreview, 
+  setBannerPreview,
+  clearFormData 
+} = creatorProfileSlice.actions;
 export default creatorProfileSlice.reducer;
 
