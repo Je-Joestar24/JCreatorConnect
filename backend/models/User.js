@@ -38,7 +38,7 @@ const userSchema = new mongoose.Schema(
 );
 
 // Index for faster queries
-userSchema.index({ email: 1 });
+// Note: email index is automatically created by unique: true, so we don't need to define it again
 userSchema.index({ role: 1 });
 
 // Virtual for creatorProfile (1-to-1 relationship)

@@ -66,7 +66,7 @@ const creatorProfileSchema = new mongoose.Schema(
 );
 
 // Indexes
-creatorProfileSchema.index({ userId: 1 });
+// Note: userId index is automatically created by unique: true, so we don't need to define it again
 creatorProfileSchema.index({ categories: 1 });
 
 // Virtual for posts created by this creator
