@@ -29,10 +29,11 @@ import {
   setProfilePicPreview, 
   setBannerPreview 
 } from '../../../store/slices/creatorProfileSlice';
+import { useDebounce } from '../../../hooks/useDebounce';
 
 /**
  * Profile Editor Component
- * Allows creators to create/edit their profile
+ * Inline editing like Upwork - each field auto-saves
  */
 const ProfileEditor = ({ onSave, initialProfile = null }) => {
   const dispatch = useDispatch();
@@ -47,12 +48,10 @@ const ProfileEditor = ({ onSave, initialProfile = null }) => {
     profile,
   } = useCreatorProfile();
 
-  // Get form data from Redux store
   const storeFormData = useSelector((state) => state.creatorProfile.formData);
   const storeProfilePicPreview = useSelector((state) => state.creatorProfile.profilePicPreview);
   const storeBannerPreview = useSelector((state) => state.creatorProfile.bannerPreview);
 
-  // Use store data if available, otherwise use initialProfile
   const currentProfile = profile || initialProfile;
   const [formData, setFormData] = useState(
     storeFormData.bio || storeFormData.instagram ? storeFormData : {
@@ -70,6 +69,19 @@ const ProfileEditor = ({ onSave, initialProfile = null }) => {
   const [bannerPreview, setBannerPreviewLocal] = useState(
     storeBannerPreview || currentProfile?.profile?.bannerUrl || null
   );
+
+  const [profilePicFile, setProfilePicFile] = useState(null);
+  const [bannerFile, setBannerFile] = useState(null);
+  const [savingStates, setSavingStates] = useState({
+    bio: false,
+    socials: false,
+    profilePic: false,
+    banner: false,
+  });
+
+  // Debounced values for auto-save
+  const debouncedBio = useDebounce(formData.bio, 1000);
+  const debouncedSocials = useDebounce(formData, 1000);
 
   // Update form data when profile changes
   useEffect(() => {
@@ -95,11 +107,34 @@ const ProfileEditor = ({ onSave, initialProfile = null }) => {
     }
   }, [currentProfile, dispatch]);
 
-  const [profilePicFile, setProfilePicFile] = useState(null);
-  const [bannerFile, setBannerFile] = useState(null);
-  const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState(null);
-  const [saveSuccess, setSaveSuccess] = useState(false);
+  // Auto-save bio
+  useEffect(() => {
+    if (debouncedBio !== (currentProfile?.profile?.bio || '') && debouncedBio !== undefined) {
+      const timer = setTimeout(() => {
+        handleAutoSaveBio();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedBio]);
+
+  // Auto-save socials
+  useEffect(() => {
+    const currentSocials = currentProfile?.profile?.socials || {};
+    const hasChanges = 
+      formData.instagram !== (currentSocials.instagram || '') ||
+      formData.youtube !== (currentSocials.youtube || '') ||
+      formData.twitter !== (currentSocials.twitter || '') ||
+      formData.website !== (currentSocials.website || '');
+    
+    if (hasChanges && formData.instagram !== undefined) {
+      const timer = setTimeout(() => {
+        handleAutoSaveSocials();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSocials]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -108,113 +143,112 @@ const ProfileEditor = ({ onSave, initialProfile = null }) => {
       [name]: value,
     };
     setFormData(newFormData);
-    dispatch(updateFormData(newFormData)); // Sync with Redux store
-    setSaveError(null);
+    dispatch(updateFormData(newFormData));
   };
 
-  const handleProfilePicChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setProfilePicFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfilePicPreviewLocal(reader.result);
-        dispatch(setProfilePicPreview(reader.result)); // Sync with Redux store
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleBannerChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setBannerFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setBannerPreviewLocal(reader.result);
-        dispatch(setBannerPreview(reader.result)); // Sync with Redux store
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSaving(true);
-    setSaveError(null);
-    setSaveSuccess(false);
-
-    const errors = [];
-    
+  const handleAutoSaveBio = async () => {
+    if (savingStates.bio) return;
+    setSavingStates(prev => ({ ...prev, bio: true }));
     try {
-      // Update bio if provided (even if empty, allow clearing)
-      try {
-        await updateBio(formData.bio || '');
-      } catch (err) {
-        errors.push(`Bio: ${err?.error || err?.message || 'Failed to update'}`);
-      }
+      await updateBio(formData.bio || '');
+      dispatch(displayNotification({
+        message: 'Bio saved',
+        type: 'success',
+      }));
+    } catch (err) {
+      dispatch(displayNotification({
+        message: err?.error || err?.message || 'Failed to save bio',
+        type: 'error',
+      }));
+    } finally {
+      setSavingStates(prev => ({ ...prev, bio: false }));
+    }
+  };
 
-      // Update social links (allow empty values to clear)
+  const handleAutoSaveSocials = async () => {
+    if (savingStates.socials) return;
+    setSavingStates(prev => ({ ...prev, socials: true }));
+    try {
       const socials = {
         instagram: formData.instagram.trim() || '',
         youtube: formData.youtube.trim() || '',
         twitter: formData.twitter.trim() || '',
         website: formData.website.trim() || '',
       };
-      
-      try {
-        await updateSocialLinks(socials);
-      } catch (err) {
-        errors.push(`Social links: ${err?.error || err?.message || 'Failed to update'}`);
-      }
-
-      // Upload profile picture if selected (don't fail if this fails)
-      if (profilePicFile) {
-        try {
-          await uploadProfilePicture(profilePicFile);
-        } catch (err) {
-          errors.push(`Profile picture: ${err?.error || err?.message || 'Failed to upload'}`);
-          // Don't throw - continue with other updates
-        }
-      }
-
-      // Upload banner if selected (don't fail if this fails)
-      if (bannerFile) {
-        try {
-          await uploadBanner(bannerFile);
-        } catch (err) {
-          errors.push(`Banner: ${err?.error || err?.message || 'Failed to upload'}`);
-          // Don't throw - continue with other updates
-        }
-      }
-
-      // If there were errors but some operations succeeded, show partial success
-      if (errors.length > 0) {
-        const errorMessage = `Some updates failed: ${errors.join(', ')}`;
-        setSaveError(errorMessage);
-        dispatch(displayNotification({
-          message: errorMessage,
-          type: 'warning',
-        }));
-      } else {
-        setSaveSuccess(true);
-        dispatch(displayNotification({
-          message: 'Profile saved successfully!',
-          type: 'success',
-        }));
-        setTimeout(() => {
-          if (onSave) onSave();
-        }, 1500);
-      }
-    } catch (err) {
-      const errorMessage = err?.error || err?.message || 'Failed to save profile';
-      setSaveError(errorMessage);
+      await updateSocialLinks(socials);
       dispatch(displayNotification({
-        message: errorMessage,
+        message: 'Social links saved',
+        type: 'success',
+      }));
+    } catch (err) {
+      dispatch(displayNotification({
+        message: err?.error || err?.message || 'Failed to save social links',
         type: 'error',
       }));
     } finally {
-      setSaving(false);
+      setSavingStates(prev => ({ ...prev, socials: false }));
+    }
+  };
+
+  const handleProfilePicChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setProfilePicFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfilePicPreviewLocal(reader.result);
+        dispatch(setProfilePicPreview(reader.result));
+      };
+      reader.readAsDataURL(file);
+
+      // Auto-upload
+      setSavingStates(prev => ({ ...prev, profilePic: true }));
+      try {
+        await uploadProfilePicture(file);
+        dispatch(displayNotification({
+          message: 'Profile picture uploaded',
+          type: 'success',
+        }));
+        if (onSave) onSave();
+      } catch (err) {
+        dispatch(displayNotification({
+          message: err?.error || err?.message || 'Failed to upload profile picture',
+          type: 'error',
+        }));
+      } finally {
+        setSavingStates(prev => ({ ...prev, profilePic: false }));
+      }
+    }
+  };
+
+  const handleBannerChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setBannerFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setBannerPreviewLocal(reader.result);
+        dispatch(setBannerPreview(reader.result));
+      };
+      reader.readAsDataURL(file);
+
+      // Auto-upload
+      setSavingStates(prev => ({ ...prev, banner: true }));
+      try {
+        await uploadBanner(file);
+        dispatch(displayNotification({
+          message: 'Banner uploaded',
+          type: 'success',
+        }));
+        if (onSave) onSave();
+      } catch (err) {
+        dispatch(displayNotification({
+          message: err?.error || err?.message || 'Failed to upload banner',
+          type: 'error',
+        }));
+      } finally {
+        setSavingStates(prev => ({ ...prev, banner: false }));
+      }
     }
   };
 
@@ -279,26 +313,17 @@ const ProfileEditor = ({ onSave, initialProfile = null }) => {
               mb: 4,
             }}
           >
-            Complete your profile to start attracting supporters. You can always update these details later.
+            Complete your profile to start attracting supporters. Changes are saved automatically.
           </Typography>
 
-          {saveError && (
-            <Alert severity="error" sx={{ mb: 3 }} onClose={() => setSaveError(null)}>
-              {saveError}
-            </Alert>
-          )}
-
-          {saveSuccess && (
-            <Alert severity="success" sx={{ mb: 3 }}>
-              Profile saved successfully! Refreshing...
-            </Alert>
-          )}
-
-          <Box component="form" onSubmit={handleSubmit}>
+          <Box component="form">
             {/* Profile Picture Upload */}
             <Box sx={{ mb: 4 }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'var(--theme-text)', mb: 2 }}>
                 Profile Picture
+                {savingStates.profilePic && (
+                  <CircularProgress size={16} sx={{ ml: 1, color: 'var(--theme-primary)' }} />
+                )}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Box
@@ -332,12 +357,14 @@ const ProfileEditor = ({ onSave, initialProfile = null }) => {
                     id="profile-pic-upload"
                     type="file"
                     onChange={handleProfilePicChange}
+                    disabled={savingStates.profilePic}
                   />
                   <label htmlFor="profile-pic-upload">
                     <Button
                       variant="outlined"
                       component="span"
                       startIcon={<PhotoCamera />}
+                      disabled={savingStates.profilePic}
                       sx={{
                         borderColor: 'var(--theme-primary)',
                         color: 'var(--theme-primary)',
@@ -358,6 +385,9 @@ const ProfileEditor = ({ onSave, initialProfile = null }) => {
             <Box sx={{ mb: 4 }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'var(--theme-text)', mb: 2 }}>
                 Banner Image
+                {savingStates.banner && (
+                  <CircularProgress size={16} sx={{ ml: 1, color: 'var(--theme-primary)' }} />
+                )}
               </Typography>
               <Box
                 sx={{
@@ -393,6 +423,7 @@ const ProfileEditor = ({ onSave, initialProfile = null }) => {
                   id="banner-upload"
                   type="file"
                   onChange={handleBannerChange}
+                  disabled={savingStates.banner}
                 />
                 <label
                   htmlFor="banner-upload"
@@ -402,7 +433,7 @@ const ProfileEditor = ({ onSave, initialProfile = null }) => {
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    cursor: 'pointer',
+                    cursor: savingStates.banner ? 'wait' : 'pointer',
                   }}
                 />
               </Box>
@@ -412,6 +443,9 @@ const ProfileEditor = ({ onSave, initialProfile = null }) => {
             <Box sx={{ mb: 4 }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'var(--theme-text)', mb: 2 }}>
                 Bio
+                {savingStates.bio && (
+                  <CircularProgress size={16} sx={{ ml: 1, color: 'var(--theme-primary)' }} />
+                )}
               </Typography>
               <TextField
                 fullWidth
@@ -446,6 +480,9 @@ const ProfileEditor = ({ onSave, initialProfile = null }) => {
             <Box sx={{ mb: 4 }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'var(--theme-text)', mb: 2 }}>
                 Social Media Links
+                {savingStates.socials && (
+                  <CircularProgress size={16} sx={{ ml: 1, color: 'var(--theme-primary)' }} />
+                )}
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <TextField
@@ -526,31 +563,6 @@ const ProfileEditor = ({ onSave, initialProfile = null }) => {
                 />
               </Box>
             </Box>
-
-            {/* Submit Button */}
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-              <Button
-                type="submit"
-                variant="contained"
-                disabled={saving || loading}
-                startIcon={saving || loading ? <CircularProgress size={20} /> : <Save />}
-                sx={{
-                  backgroundColor: 'var(--theme-primary)',
-                  color: 'white',
-                  px: 4,
-                  py: 1.5,
-                  fontWeight: 600,
-                  '&:hover': {
-                    backgroundColor: 'var(--theme-secondary)',
-                  },
-                  '&:disabled': {
-                    backgroundColor: 'var(--theme-text-muted)',
-                  },
-                }}
-              >
-                {saving || loading ? 'Saving...' : 'Save Profile'}
-              </Button>
-            </Box>
           </Box>
         </CardContent>
       </Card>
@@ -559,4 +571,3 @@ const ProfileEditor = ({ onSave, initialProfile = null }) => {
 };
 
 export default ProfileEditor;
-

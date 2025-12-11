@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, CircularProgress, Container, Typography } from '@mui/material';
-import { motion } from 'framer-motion';
+import { Box, CircularProgress, Container, Typography, Fab } from '@mui/material';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useDispatch } from 'react-redux';
+import { Payment } from '@mui/icons-material';
 import useCreatorProfile from '../../hooks/creatorProfileHook';
 import { useAuth } from '../../hooks/authHook';
 import { displayNotification } from '../../store/slices/uiSlice';
@@ -10,8 +11,8 @@ import CreatorProfileBanner from '../../components/creator/profile/CreatorProfil
 import CreatorProfileHeader from '../../components/creator/profile/CreatorProfileHeader';
 import CreatorProfileBody from '../../components/creator/profile/CreatorProfileBody';
 import CreatorProfilePosts from '../../components/creator/profile/CreatorProfilePosts';
-import ProfileCompletionPrompt from '../../components/creator/profile/ProfileCompletionPrompt';
 import ProfileEditor from '../../components/creator/profile/ProfileEditor';
+
 /**
  * Creator Profile Page
  * Displays public creator profile or own profile if viewing own page
@@ -29,6 +30,7 @@ const CreatorProfile = () => {
     getPublicProfile,
     getMyProfile,
     uploadBanner,
+    uploadProfilePicture,
     clearError,
   } = useCreatorProfile();
 
@@ -50,42 +52,35 @@ const CreatorProfile = () => {
     const hasBanner = profile.bannerUrl && profile.bannerUrl.trim().length > 0;
     const hasSocials = socials.instagram || socials.youtube || socials.twitter || socials.website;
     
-    // Profile is empty if none of these fields have data
     return !hasBio && !hasAvatar && !hasBanner && !hasSocials;
   };
 
-  // Check if error is "profile not found" - calculated before hooks
   const isProfileNotFoundError = error && typeof error === 'string' && (
     error.toLowerCase().includes('not found') || 
     error.toLowerCase().includes('profile not found')
   );
 
-  // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
   // Fetch profile on mount or when id/currentUser changes
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         clearError();
         setProfileNotFound(false);
-        // If no id param, fetch own profile
         if (!id) {
           try {
             await getMyProfile();
           } catch (err) {
-            // If profile not found, allow creator to create it
             if (currentUser?.role === 'creator') {
               setProfileNotFound(true);
               setIsEditing(true);
             }
           }
         } else {
-          // Check if viewing own profile
           const isOwn = currentUser?._id === id;
           if (isOwn && currentUser?.role === 'creator') {
             try {
               await getMyProfile();
             } catch (err) {
-              // If profile not found, allow creator to create it
               setProfileNotFound(true);
               setIsEditing(true);
             }
@@ -95,20 +90,18 @@ const CreatorProfile = () => {
         }
       } catch (error) {
         console.error('Failed to fetch profile:', error);
-        // Check if error message indicates profile not found
         const errorMessage = error?.error || error?.message || '';
         const isProfileNotFound = 
           errorMessage.toLowerCase().includes('not found') || 
           errorMessage.toLowerCase().includes('profile not found') ||
           error?.response?.status === 404;
         
-        // If profile not found and user is a creator viewing their own profile, show editor
         if (isProfileNotFound && currentUser?.role === 'creator') {
           const isOwn = !id || currentUser?._id === id;
           if (isOwn) {
             setProfileNotFound(true);
             setIsEditing(true);
-            clearError(); // Clear the error since we're showing the editor
+            clearError();
           }
         }
       }
@@ -120,7 +113,7 @@ const CreatorProfile = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, currentUser?._id, currentUser?.role]);
 
-  // Display error notification if there's an error (notification component handles it)
+  // Display error notification
   useEffect(() => {
     if (error && !isProfileNotFoundError) {
       const errorMessage = typeof error === 'string' ? error : error?.message || 'An error occurred';
@@ -128,19 +121,9 @@ const CreatorProfile = () => {
         message: errorMessage,
         type: 'error',
       }));
-      clearError(); // Clear error after showing notification
+      clearError();
     }
   }, [error, isProfileNotFoundError, dispatch, clearError]);
-
-  // Display notification for profile not found (public view)
-  useEffect(() => {
-    if (!profile && !(currentUser?.role === 'creator' && (!id || currentUser?._id === id)) && !loading && !error) {
-      dispatch(displayNotification({
-        message: 'Profile not found',
-        type: 'info',
-      }));
-    }
-  }, [profile, currentUser, id, loading, error, dispatch]);
 
   const handleBannerUpload = async (file) => {
     try {
@@ -156,6 +139,14 @@ const CreatorProfile = () => {
         type: 'error',
       }));
     }
+  };
+
+  const handlePayClick = () => {
+    // TODO: Implement payment flow
+    dispatch(displayNotification({
+      message: 'Payment feature coming soon!',
+      type: 'info',
+    }));
   };
 
   if (loading) {
@@ -174,8 +165,7 @@ const CreatorProfile = () => {
     );
   }
 
-  // If profile not found but user is creator, check if it's completely empty
-  // Only show editor if profile is completely empty (no data at all)
+  // Show editor if profile not found or empty
   if ((!profile || profileNotFound) && currentUser?.role === 'creator' && (isEditing || profileNotFound)) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -197,7 +187,6 @@ const CreatorProfile = () => {
     );
   }
 
-  // If profile exists but is completely empty, show editor
   if (profile && isOwnProfile && isProfileEmpty(profile) && !isEditing) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -219,7 +208,6 @@ const CreatorProfile = () => {
     );
   }
 
-  // If error is "profile not found" and user is creator, show editor
   if (isProfileNotFoundError && currentUser?.role === 'creator' && !profile) {
     const isOwn = !id || currentUser?._id === id;
     if (isOwn) {
@@ -242,7 +230,6 @@ const CreatorProfile = () => {
     }
   }
 
-  // If no profile and not editing, show editor for creators
   if (!profile && currentUser?.role === 'creator' && !id) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -256,7 +243,6 @@ const CreatorProfile = () => {
     );
   }
 
-  // If profile not found for public view (not creator's own profile)
   if (!profile && !(currentUser?.role === 'creator' && (!id || currentUser?._id === id)) && !loading) {
     return (
       <Container maxWidth="md" sx={{ py: 4 }}>
@@ -269,7 +255,6 @@ const CreatorProfile = () => {
     );
   }
 
-  // If still loading or no profile, show loading
   if (!profile) {
     return (
       <Box
@@ -297,8 +282,24 @@ const CreatorProfile = () => {
         sx={{
           minHeight: '100vh',
           backgroundColor: 'var(--theme-bg)',
+          position: 'relative',
+          overflow: 'hidden',
         }}
       >
+        {/* Decorative virtual elements */}
+        <Box
+          className="decorative-orb decorative-orb-1"
+          sx={{
+            display: { xs: 'none', lg: 'block' },
+          }}
+        />
+        <Box
+          className="decorative-orb decorative-orb-2"
+          sx={{
+            display: { xs: 'none', lg: 'block' },
+          }}
+        />
+
         {/* Banner */}
         <CreatorProfileBanner
           profile={profile}
@@ -306,55 +307,80 @@ const CreatorProfile = () => {
           onBannerUpload={handleBannerUpload}
         />
 
-        <Container maxWidth="lg" sx={{ py: 4 }}>
-          {/* Profile Completion Prompt - Only show for own profile */}
-          {isOwnProfile && profile.completionStatus && (
-            <Box sx={{ mb: 3 }}>
-              <ProfileCompletionPrompt
-                profile={profile}
-                completionStatus={profile.completionStatus}
-              />
-            </Box>
-          )}
+        {/* Header with all info - Full width with padding */}
+        <Box sx={{ position: 'relative', zIndex: 2, px: { xs: 2, sm: 4, md: 6, lg: 8 } }}>
+          <CreatorProfileHeader 
+            profile={profile} 
+            isOwnProfile={isOwnProfile}
+            onProfilePicUpload={async (file) => {
+              try {
+                await uploadProfilePicture(file);
+                dispatch(displayNotification({
+                  message: 'Profile picture uploaded successfully!',
+                  type: 'success',
+                }));
+                await getMyProfile();
+              } catch (error) {
+                dispatch(displayNotification({
+                  message: error?.error || error?.message || 'Failed to upload profile picture',
+                  type: 'error',
+                }));
+              }
+            }}
+          />
+        </Box>
 
-          {/* Header */}
-          <CreatorProfileHeader profile={profile} isOwnProfile={isOwnProfile} />
-
-          {/* Body */}
-          <Box sx={{ mt: 4, display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 4 }}>
-            <Box>
-              {isEditing ? (
-                <ProfileEditor
-                  initialProfile={profile}
-                  onSave={async () => {
-                    setIsEditing(false);
-                    await getMyProfile();
-                  }}
-                />
-              ) : (
-                <CreatorProfileBody
-                  profile={profile}
-                  isOwnProfile={isOwnProfile}
-                  onEditClick={() => setIsEditing(true)}
-                />
-              )}
-            </Box>
-
-            {/* Sidebar for future features */}
-            <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
-              {/* Can add featured post, quick stats, etc. here */}
-            </Box>
+        {/* Body and Posts - Container for content */}
+        <Container maxWidth="lg" sx={{ py: 4, position: 'relative', zIndex: 1 }}>
+          {/* Body - Categories and Tiers */}
+          <Box sx={{ mt: 4, position: 'relative', zIndex: 1 }}>
+            <CreatorProfileBody
+              profile={profile}
+              isOwnProfile={isOwnProfile}
+            />
           </Box>
 
           {/* Posts */}
-          <Box sx={{ mt: 6 }}>
+          <Box sx={{ mt: 6, position: 'relative', zIndex: 1 }}>
             <CreatorProfilePosts posts={profile.posts} />
           </Box>
         </Container>
+
+        {/* Floating Pay Button */}
+        {!isOwnProfile && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5, type: 'spring', stiffness: 200 }}
+            style={{
+              position: 'fixed',
+              bottom: 24,
+              right: 24,
+              zIndex: 1000,
+            }}
+          >
+            <Fab
+              color="primary"
+              onClick={handlePayClick}
+              sx={{
+                backgroundColor: 'var(--theme-primary)',
+                color: 'white',
+                boxShadow: 'var(--theme-shadow-lg)',
+                '&:hover': {
+                  backgroundColor: 'var(--theme-secondary)',
+                  transform: 'scale(1.1)',
+                },
+                transition: 'all 0.3s ease',
+              }}
+              aria-label="Support creator"
+            >
+              <Payment />
+            </Fab>
+          </motion.div>
+        )}
       </Box>
     </motion.div>
   );
 };
 
 export default CreatorProfile;
-

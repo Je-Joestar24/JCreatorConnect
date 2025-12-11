@@ -18,8 +18,15 @@ const AppRouter = () => {
     <Routes>
       {/* Public Routes */}
       <Route element={<UnauthedLayout />}>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/about" element={<AboutPage />} />
+        <Route path="/" element={
+          <RequiresGuest>
+            <HomePage />
+          </RequiresGuest>} />
+        <Route path="/about" element={
+          <RequiresGuest>
+            <AboutPage />
+          </RequiresGuest>
+        } />
         <Route path="/creator/:id" element={<CreatorProfile />} />
       </Route>
 
