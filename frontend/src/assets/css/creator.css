@@ -371,6 +371,32 @@
   }
 }
 
+/* Social Add Button */
+.social-add-button {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px dashed var(--theme-primary);
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--theme-primary);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.social-add-button:hover {
+  border-color: var(--theme-secondary);
+  background-color: var(--theme-bg-secondary);
+  transform: scale(1.1);
+}
+
+.social-add-button:active {
+  transform: scale(0.95);
+}
+
 /* Smooth transitions */
 * {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;

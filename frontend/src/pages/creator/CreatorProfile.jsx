@@ -11,7 +11,6 @@ import CreatorProfileBanner from '../../components/creator/profile/CreatorProfil
 import CreatorProfileHeader from '../../components/creator/profile/CreatorProfileHeader';
 import CreatorProfileBody from '../../components/creator/profile/CreatorProfileBody';
 import CreatorProfilePosts from '../../components/creator/profile/CreatorProfilePosts';
-import ProfileEditor from '../../components/creator/profile/ProfileEditor';
 
 /**
  * Creator Profile Page
@@ -165,80 +164,18 @@ const CreatorProfile = () => {
     );
   }
 
-  // Show editor if profile not found or empty
-  if ((!profile || profileNotFound) && currentUser?.role === 'creator' && (isEditing || profileNotFound)) {
+  // If profile not found, show empty state (no editor)
+  if (!profile && currentUser?.role === 'creator' && (!id || currentUser?._id === id) && !loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <ProfileEditor
-            onSave={async () => {
-              setIsEditing(false);
-              setProfileNotFound(false);
-              clearError();
-              await getMyProfile();
-            }}
-          />
-        </motion.div>
-      </Container>
-    );
-  }
-
-  if (profile && isOwnProfile && isProfileEmpty(profile) && !isEditing) {
-    return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <ProfileEditor
-            initialProfile={profile}
-            onSave={async () => {
-              setIsEditing(false);
-              clearError();
-              await getMyProfile();
-            }}
-          />
-        </motion.div>
-      </Container>
-    );
-  }
-
-  if (isProfileNotFoundError && currentUser?.role === 'creator' && !profile) {
-    const isOwn = !id || currentUser?._id === id;
-    if (isOwn) {
-      return (
-        <Container maxWidth="lg" sx={{ py: 4 }}>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <ProfileEditor
-              onSave={async () => {
-                clearError();
-                await getMyProfile();
-              }}
-            />
-          </motion.div>
-        </Container>
-      );
-    }
-  }
-
-  if (!profile && currentUser?.role === 'creator' && !id) {
-    return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <ProfileEditor
-          onSave={async () => {
-            setIsEditing(false);
-            await getMyProfile();
-          }}
-        />
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        <Box sx={{ textAlign: 'center', py: 8 }}>
+          <Typography variant="h6" sx={{ color: 'var(--theme-text-secondary)', mb: 2 }}>
+            Profile not found
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'var(--theme-text-muted)' }}>
+            Start by adding your profile information below.
+          </Typography>
+        </Box>
       </Container>
     );
   }
@@ -326,6 +263,9 @@ const CreatorProfile = () => {
                   type: 'error',
                 }));
               }
+            }}
+            onSocialUpdate={async () => {
+              await getMyProfile();
             }}
           />
         </Box>

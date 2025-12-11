@@ -637,18 +637,28 @@ export const updateCreatorSocialLinks = async (userId, socials) => {
     creatorProfile = await CreatorProfile.create({ userId: user._id });
   }
 
-  // Update social links (only provided fields)
+  // Update social links (only provided fields, allow empty strings)
+  // Initialize socials object if it doesn't exist
+  if (!creatorProfile.socials) {
+    creatorProfile.socials = {
+      instagram: '',
+      youtube: '',
+      twitter: '',
+      website: '',
+    };
+  }
+
   if (socials.instagram !== undefined) {
-    creatorProfile.socials.instagram = socials.instagram.trim() || '';
+    creatorProfile.socials.instagram = socials.instagram ? socials.instagram.trim() : '';
   }
   if (socials.youtube !== undefined) {
-    creatorProfile.socials.youtube = socials.youtube.trim() || '';
+    creatorProfile.socials.youtube = socials.youtube ? socials.youtube.trim() : '';
   }
   if (socials.twitter !== undefined) {
-    creatorProfile.socials.twitter = socials.twitter.trim() || '';
+    creatorProfile.socials.twitter = socials.twitter ? socials.twitter.trim() : '';
   }
   if (socials.website !== undefined) {
-    creatorProfile.socials.website = socials.website.trim() || '';
+    creatorProfile.socials.website = socials.website ? socials.website.trim() : '';
   }
 
   await creatorProfile.save();

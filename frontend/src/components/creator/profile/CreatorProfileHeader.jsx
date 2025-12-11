@@ -1,19 +1,20 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Box, Avatar, Typography, IconButton, TextField, Dialog, DialogContent, CircularProgress } from '@mui/material';
-import { Edit, Check, Close, Email, Chat, PhotoCamera, Visibility } from '@mui/icons-material';
+import { Edit, Check, Close, Email, Chat, PhotoCamera, Add } from '@mui/icons-material';
 import { Instagram, YouTube, Twitter, Language } from '@mui/icons-material';
 import useCreatorProfile from '../../../hooks/creatorProfileHook';
 import { useDebounce } from '../../../hooks/useDebounce';
 import { useDispatch } from 'react-redux';
 import { displayNotification } from '../../../store/slices/uiSlice';
+import ProfileSocialModal from './ProfileSocialModal';
 
 /**
  * Creator Profile Header Component
  * Displays profile picture, name, username, bio, social links, email, chat button, and reviews
  * With inline editing capabilities and clickable profile picture
  */
-const CreatorProfileHeader = ({ profile, isOwnProfile, onProfilePicUpload }) => {
+const CreatorProfileHeader = ({ profile, isOwnProfile, onProfilePicUpload, onSocialUpdate }) => {
   if (!profile?.user) return null;
 
   const { user } = profile;
@@ -26,6 +27,7 @@ const CreatorProfileHeader = ({ profile, isOwnProfile, onProfilePicUpload }) => 
   const [isViewingProfilePic, setIsViewingProfilePic] = useState(false);
   const [isUploadingProfilePic, setIsUploadingProfilePic] = useState(false);
   const [hovered, setHovered] = useState(false);
+  const [isSocialModalOpen, setIsSocialModalOpen] = useState(false);
   const bioInputRef = useRef(null);
   const fileInputRef = useRef(null);
 
@@ -106,6 +108,13 @@ const CreatorProfileHeader = ({ profile, isOwnProfile, onProfilePicUpload }) => 
       }
     }
   };
+
+  // Check if all socials are filled
+  const allSocialsFilled = 
+    socials.instagram && socials.instagram.trim().length > 0 &&
+    socials.youtube && socials.youtube.trim().length > 0 &&
+    socials.twitter && socials.twitter.trim().length > 0 &&
+    socials.website && socials.website.trim().length > 0;
 
   // Mock reviews data (replace with real data later)
   const reviews = {
@@ -456,7 +465,48 @@ const CreatorProfileHeader = ({ profile, isOwnProfile, onProfilePicUpload }) => 
             </Box>
           </Box>
         </Box>
+
+        {/* Social Links Add Button - Only show if not all socials are filled and is own profile */}
+        {isOwnProfile && !allSocialsFilled && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+            <motion.button
+              onClick={() => setIsSocialModalOpen(true)}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: '50%',
+                border: '2px dashed var(--theme-primary)',
+                backgroundColor: 'transparent',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                color: 'var(--theme-primary)',
+                transition: 'all 0.3s ease',
+              }}
+              aria-label="Add social links"
+            >
+              <Add sx={{ fontSize: 28 }} />
+            </motion.button>
+          </Box>
+        )}
       </motion.div>
+
+      {/* Social Links Modal */}
+      <ProfileSocialModal
+        open={isSocialModalOpen}
+        onClose={() => setIsSocialModalOpen(false)}
+        profile={profile}
+        isOwnProfile={isOwnProfile}
+        onSave={async () => {
+          setIsSocialModalOpen(false);
+          if (onSocialUpdate) {
+            await onSocialUpdate();
+          }
+        }}
+      />
 
       {/* Profile Picture View Dialog */}
       <Dialog

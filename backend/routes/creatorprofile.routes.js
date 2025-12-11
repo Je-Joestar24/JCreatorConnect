@@ -30,34 +30,70 @@ const updateBioValidation = [
 
 /**
  * Validation rules for updating social links
+ * All fields are optional - can be empty strings or null
  */
 const updateSocialLinksValidation = [
   body('socials.instagram')
-    .optional()
+    .optional({ nullable: true, checkFalsy: true })
     .trim()
-    .isURL()
-    .withMessage('Instagram must be a valid URL')
-    .matches(/instagram\.com/)
-    .withMessage('Please provide a valid Instagram URL'),
+    .custom((value) => {
+      // If value is provided and not empty, validate it's a URL and contains instagram.com
+      if (value && value.length > 0) {
+        const urlPattern = /^https?:\/\/.+/;
+        if (!urlPattern.test(value)) {
+          throw new Error('Instagram must be a valid URL');
+        }
+        if (!value.includes('instagram.com')) {
+          throw new Error('Please provide a valid Instagram URL');
+        }
+      }
+      return true;
+    }),
   body('socials.youtube')
-    .optional()
+    .optional({ nullable: true, checkFalsy: true })
     .trim()
-    .isURL()
-    .withMessage('YouTube must be a valid URL')
-    .matches(/youtube\.com|youtu\.be/)
-    .withMessage('Please provide a valid YouTube URL'),
+    .custom((value) => {
+      // If value is provided and not empty, validate it's a URL and contains youtube.com or youtu.be
+      if (value && value.length > 0) {
+        const urlPattern = /^https?:\/\/.+/;
+        if (!urlPattern.test(value)) {
+          throw new Error('YouTube must be a valid URL');
+        }
+        if (!value.includes('youtube.com') && !value.includes('youtu.be')) {
+          throw new Error('Please provide a valid YouTube URL');
+        }
+      }
+      return true;
+    }),
   body('socials.twitter')
-    .optional()
+    .optional({ nullable: true, checkFalsy: true })
     .trim()
-    .isURL()
-    .withMessage('Twitter must be a valid URL')
-    .matches(/twitter\.com|x\.com/)
-    .withMessage('Please provide a valid Twitter/X URL'),
+    .custom((value) => {
+      // If value is provided and not empty, validate it's a URL and contains twitter.com or x.com
+      if (value && value.length > 0) {
+        const urlPattern = /^https?:\/\/.+/;
+        if (!urlPattern.test(value)) {
+          throw new Error('Twitter must be a valid URL');
+        }
+        if (!value.includes('twitter.com') && !value.includes('x.com')) {
+          throw new Error('Please provide a valid Twitter/X URL');
+        }
+      }
+      return true;
+    }),
   body('socials.website')
-    .optional()
+    .optional({ nullable: true, checkFalsy: true })
     .trim()
-    .isURL()
-    .withMessage('Website must be a valid URL'),
+    .custom((value) => {
+      // If value is provided and not empty, validate it's a URL
+      if (value && value.length > 0) {
+        const urlPattern = /^https?:\/\/.+/;
+        if (!urlPattern.test(value)) {
+          throw new Error('Website must be a valid URL');
+        }
+      }
+      return true;
+    }),
 ];
 
 /**
