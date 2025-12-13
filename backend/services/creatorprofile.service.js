@@ -88,9 +88,13 @@ const uploadImage = async (buffer, folder, publicId = null, userId = null, type 
   console.log('Using local storage for image upload (Cloudinary not available or failed)');
   const localPath = await uploadToLocal(buffer, userId, type);
   // Construct full URL for local files
+  // Always use BACKEND_URL since uploads are served by backend, not frontend
   // Remove /api from base URL if present, since uploads are served at root level
-  const baseUrl = (process.env.BACKEND_URL || process.env.FRONTEND_URL || 'http://localhost:5000').replace('/api', '');
-  return `${baseUrl}${localPath}`;
+  const backendPort = process.env.PORT || 5000;
+  const backendHost = process.env.BACKEND_URL 
+    ? process.env.BACKEND_URL.replace('/api', '')
+    : `http://localhost:${backendPort}`;
+  return `${backendHost}${localPath}`;
 };
 
 /**
