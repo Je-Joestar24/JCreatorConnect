@@ -1,10 +1,12 @@
-import { Box, Button } from '@mui/material';
+import { Box } from '@mui/material';
 import { Outlet } from 'react-router-dom';
-import { useAuth } from '../hooks/authHook';
+import CreatorHeaderLayout from '../components/header/creator/CreatorHeaderLayout';
 
+/**
+ * Creator Layout Component
+ * Main layout wrapper for creator dashboard pages
+ */
 const CreatorLayout = () => {
-  const { logout, user } = useAuth();
-
   return (
     <Box
       sx={{
@@ -14,31 +16,15 @@ const CreatorLayout = () => {
         backgroundColor: 'var(--theme-bg)',
       }}
     >
-      {/* Simple Header with Logout */}
-      <Box
-        sx={{
-          p: 2,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          borderBottom: '1px solid var(--theme-border)',
-        }}
-      >
-        <Box>
-          <strong>Creator Dashboard</strong>
-          {user && <span style={{ marginLeft: '1rem', color: 'var(--theme-text-secondary)' }}>{user.name}</span>}
-        </Box>
-        <Button variant="outlined" onClick={logout}>
-          Logout
-        </Button>
-      </Box>
+      {/* Enhanced Header */}
+      <CreatorHeaderLayout />
 
       {/* Page Content */}
       <Box
         component="main"
         sx={{
           flex: 1,
-          p: 3,
+          width: '100%',
         }}
       >
         <Outlet />
