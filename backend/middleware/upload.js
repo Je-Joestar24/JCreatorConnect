@@ -10,8 +10,9 @@ const __dirname = path.dirname(__filename);
 const uploadsDir = path.join(__dirname, '../uploads');
 const profilesDir = path.join(uploadsDir, 'profiles');
 const bannersDir = path.join(uploadsDir, 'banners');
+const postsDir = path.join(uploadsDir, 'posts');
 
-[uploadsDir, profilesDir, bannersDir].forEach((dir) => {
+[uploadsDir, profilesDir, bannersDir, postsDir].forEach((dir) => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
@@ -22,9 +23,16 @@ const diskStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     // Determine destination based on route or file field
     if (file.fieldname === 'image') {
-      // Check if it's profile picture or banner based on route
-      const isProfilePic = req.path?.includes('profile-picture');
-      cb(null, isProfilePic ? profilesDir : bannersDir);
+      // Check route to determine destination
+      if (req.path?.includes('profile-picture')) {
+        cb(null, profilesDir);
+      } else if (req.path?.includes('banner')) {
+        cb(null, bannersDir);
+      } else if (req.path?.includes('/posts/') && req.path?.includes('/image')) {
+        cb(null, postsDir);
+      } else {
+        cb(null, uploadsDir);
+      }
     } else {
       cb(null, uploadsDir);
     }
@@ -94,5 +102,6 @@ export {
   uploadsDir,
   profilesDir,
   bannersDir,
+  postsDir,
 };
 
