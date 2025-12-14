@@ -2,6 +2,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import themeReducer from './slices/themeSlice.js';
 import userReducer from './slices/userSlice.js';
 import creatorProfileReducer from './slices/creatorProfileSlice.js';
+import postsReducer from './slices/postsSlice.js';
 import uiReducer from './slices/uiSlice.js';
 
 export const store = configureStore({
@@ -9,6 +10,7 @@ export const store = configureStore({
     theme: themeReducer,
     user: userReducer,
     creatorProfile: creatorProfileReducer,
+    posts: postsReducer,
     ui: uiReducer,
     // Add more reducers here
   },
