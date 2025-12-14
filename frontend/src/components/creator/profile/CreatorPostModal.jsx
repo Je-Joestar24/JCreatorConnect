@@ -210,7 +210,11 @@ const CreatorPostModal = ({ open, postType = 'text', onClose, existingPost = nul
 
   const handleClose = () => {
     if (!operationLoading) {
-      dispatch(setActiveModal(''));
+      // Only clear activeModal if this modal was opened via activeModal
+      // If onClose is provided, it means it's being controlled externally (like edit modal)
+      if (!onClose) {
+        dispatch(setActiveModal(''));
+      }
       onClose?.();
     }
   };
@@ -309,7 +313,7 @@ const CreatorPostModal = ({ open, postType = 'text', onClose, existingPost = nul
               <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'var(--theme-text)' }}>
                 {user?.name || 'Creator'}
               </Typography>
-              <FormControl size="small" sx={{ minWidth: 150, mt: 0.5 }}>
+              {!isEditMode && (<FormControl size="small" sx={{ minWidth: 150, mt: 0.5 }}>
                 <Select
                   value={accessType}
                   onChange={(e) => setAccessType(e.target.value)}
@@ -343,7 +347,7 @@ const CreatorPostModal = ({ open, postType = 'text', onClose, existingPost = nul
                     </Box>
                   </MenuItem>
                 </Select>
-              </FormControl>
+              </FormControl>)}
             </Box>
           </Box>
 

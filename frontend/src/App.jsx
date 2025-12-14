@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import AppRouter from './router/AppRouter';
 import Notification from './components/common/Notification';
+import GlobalDialogBox from './components/common/GlobalDialogBox';
 
 const App = () => {
   const location = useLocation();
@@ -19,6 +20,7 @@ const App = () => {
   return (
     <>
       <Notification />
+      <GlobalDialogBox />
       <AnimatePresence mode="wait">
         <motion.div
           key={location.pathname}
