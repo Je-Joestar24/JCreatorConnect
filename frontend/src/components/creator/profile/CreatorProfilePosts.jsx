@@ -1,15 +1,82 @@
+import { useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Box, Typography, Card, CardContent, CardMedia } from '@mui/material';
+import { Box, Typography, Card, CardContent, CardMedia, CircularProgress, Alert } from '@mui/material';
 import { Lock, Image, VideoLibrary, Link as LinkIcon, Article } from '@mui/icons-material';
+import { usePosts } from '../../../hooks/postHook';
 
 /**
  * Creator Profile Posts Component
  * Displays free posts and locked posts preview
+ * Loads posts from API using usePosts hook
  */
-const CreatorProfilePosts = ({ posts }) => {
-  if (!posts) return null;
+const CreatorProfilePosts = ({ creatorId, isOwnProfile, refreshTrigger }) => {
+  const {
+    creatorPosts,
+    creatorPostsLoading,
+    creatorPostsError,
+    getPostsByCreator,
+  } = usePosts();
 
-  const { free = [], locked = [] } = posts;
+  // Load posts when component mounts or creatorId changes
+  useEffect(() => {
+    if (creatorId) {
+      getPostsByCreator(creatorId, { page: 1, limit: 50 });
+    }
+  }, [creatorId, refreshTrigger]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Separate free and locked posts
+  const { free, locked } = useMemo(() => {
+    if (!creatorPosts || creatorPosts.length === 0) {
+      return { free: [], locked: [] };
+    }
+
+    const freePosts = creatorPosts.filter((post) => post.accessType === 'free' && !post.isLocked);
+    const lockedPosts = creatorPosts.filter((post) => post.accessType !== 'free' || post.isLocked);
+
+    return { free: freePosts, locked: lockedPosts };
+  }, [creatorPosts]);
+
+  // Loading state
+  if (creatorPostsLoading) {
+    return (
+      <motion.div
+        className="creator-profile-posts"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+      >
+        <Box className="posts-container">
+          <Typography variant="h5" sx={{ fontWeight: 700, color: 'var(--theme-text)', mb: 3 }}>
+            Posts
+          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+            <CircularProgress sx={{ color: 'var(--theme-primary)' }} />
+          </Box>
+        </Box>
+      </motion.div>
+    );
+  }
+
+  // Error state
+  if (creatorPostsError) {
+    return (
+      <motion.div
+        className="creator-profile-posts"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+      >
+        <Box className="posts-container">
+          <Typography variant="h5" sx={{ fontWeight: 700, color: 'var(--theme-text)', mb: 3 }}>
+            Posts
+          </Typography>
+          <Alert severity="error" sx={{ backgroundColor: 'var(--theme-bg-secondary)', color: 'var(--theme-error)' }}>
+            {creatorPostsError}
+          </Alert>
+        </Box>
+      </motion.div>
+    );
+  }
 
   const getPostIcon = (type) => {
     switch (type) {

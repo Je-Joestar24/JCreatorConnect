@@ -11,6 +11,7 @@ import CreatorProfileBanner from '../../components/creator/profile/CreatorProfil
 import CreatorProfileHeader from '../../components/creator/profile/CreatorProfileHeader';
 import CreatorProfileBody from '../../components/creator/profile/CreatorProfileBody';
 import CreatorProfilePosts from '../../components/creator/profile/CreatorProfilePosts';
+import CreatorProfileCreatePost from '../../components/creator/profile/CreatorProfileCreatePost';
 
 /**
  * Creator Profile Page
@@ -35,6 +36,7 @@ const CreatorProfile = () => {
 
   const [isEditing, setIsEditing] = useState(false);
   const [profileNotFound, setProfileNotFound] = useState(false);
+  const [postsRefreshTrigger, setPostsRefreshTrigger] = useState(0);
 
   /**
    * Check if profile is completely empty (no data at all)
@@ -280,9 +282,26 @@ const CreatorProfile = () => {
             />
           </Box>
 
+          {/* Create Post (only for own profile) */}
+          {isOwnProfile && (
+            <Box sx={{ mt: 4, position: 'relative', zIndex: 1 }}>
+              <CreatorProfileCreatePost 
+                isOwnProfile={isOwnProfile}
+                onPostCreated={async () => {
+                  // Trigger refresh of posts list
+                  setPostsRefreshTrigger((prev) => prev + 1);
+                }}
+              />
+            </Box>
+          )}
+
           {/* Posts */}
-          <Box sx={{ mt: 6, position: 'relative', zIndex: 1 }}>
-            <CreatorProfilePosts posts={profile.posts} />
+          <Box sx={{ mt: isOwnProfile ? 2 : 6, position: 'relative', zIndex: 1 }}>
+            <CreatorProfilePosts 
+              creatorId={profile?.user?._id || profile?.user?.toString?.()} 
+              isOwnProfile={isOwnProfile}
+              refreshTrigger={postsRefreshTrigger}
+            />
           </Box>
         </Container>
 

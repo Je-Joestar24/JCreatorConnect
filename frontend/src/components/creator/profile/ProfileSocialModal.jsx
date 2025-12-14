@@ -121,7 +121,7 @@ const ProfileSocialModal = ({ open, onClose, profile, isOwnProfile, onSave }) =>
       PaperProps={{
         sx: {
           borderRadius: 3,
-          backgroundColor: 'var(--theme-bg-card)',
+          backgroundColor: 'var(--theme-bg)',
           border: '1px solid var(--theme-border)',
         },
       }}
