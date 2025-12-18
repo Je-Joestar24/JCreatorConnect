@@ -25,6 +25,7 @@ export const fetchAllPosts = createAsyncThunk(
       return {
         posts: result.data,
         pagination: result.pagination,
+        page: params.page || 1, // Include page number for pagination handling
       };
     } else {
       return rejectWithValue({ error: result.error });
@@ -240,8 +241,19 @@ const postsSlice = createSlice({
       })
       .addCase(fetchAllPosts.fulfilled, (state, action) => {
         state.allPostsLoading = false;
-        state.allPosts = action.payload.posts;
-        state.allPostsPagination = action.payload.pagination;
+        const { posts, pagination, page } = action.payload;
+        
+        // If page is 1, replace posts. Otherwise, append new posts
+        if (page === 1) {
+          state.allPosts = posts;
+        } else {
+          // Append new posts, avoiding duplicates
+          const existingIds = new Set(state.allPosts.map(p => p._id));
+          const newPosts = posts.filter(p => !existingIds.has(p._id));
+          state.allPosts = [...state.allPosts, ...newPosts];
+        }
+        
+        state.allPostsPagination = pagination;
       })
       .addCase(fetchAllPosts.rejected, (state, action) => {
         state.allPostsLoading = false;
